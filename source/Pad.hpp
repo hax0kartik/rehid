@@ -1,6 +1,6 @@
 #include <3ds.h>
 #include "PadRing.hpp"
-#define IOHIDPAD *(vu32*)0x1EC46000
+#define IOHIDPAD *(vu16*)0x1EC46000
 
 class Pad
 {
@@ -11,7 +11,7 @@ class Pad
         void SetTimer();
         Handle *GetTimer() { return &m_timer; };
         void Sampling();
-        void ReadFromIO(PadEntry *entry);
+        void ReadFromIO(PadEntry *entry, uint32_t *raw);
         Handle *GetEvent() {return &m_event; };
     private:
         uint8_t m_isinitialized = 0;

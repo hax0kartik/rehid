@@ -17,21 +17,23 @@ void Pad::SetTimer()
         svcBreak(USERBREAK_ASSERT);
 }
 
-void Pad::ReadFromIO(PadEntry *entry)
+void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw)
 {
-    uint32_t latest = IOHIDPAD ^ 0xFFF;
+    uint32_t latest = (u32)IOHIDPAD ^ 0xFFF;
+    *raw = latest;
+    latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
     entry->pressedpadstate = (latest ^ m_latestkeys) & ~m_latestkeys;
-    entry->releasedpadstate = m_latestkeys & ~latest;
+    entry->releasedpadstate = (latest ^ m_latestkeys) & m_latestkeys;
     entry->currpadstate = latest;
     m_latestkeys = latest;
 }
 
 void Pad::Sampling()
 {
-    PadEntry finalentry;
+    PadEntry finalentry; uint32_t latest;
     svcSetTimer(m_timer, 4000000LL, 0LL);
-    ReadFromIO(&finalentry);
-    m_ring->SetCurrPadState(m_latestkeys);
+    ReadFromIO(&finalentry, &latest);
+    m_ring->SetCurrPadState(latest);
     m_ring->WriteToRing(&finalentry);
     svcSignalEvent(m_event);
 }

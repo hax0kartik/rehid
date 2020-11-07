@@ -7,13 +7,15 @@ void PadRing::WriteToRing(PadEntry *entry)
         index = 0;
     else
         index++;
-    m_entries[index].currpadstate = entry->currpadstate;
-    m_entries[index].pressedpadstate = entry->pressedpadstate;
-    m_entries[index].releasedpadstate = entry->releasedpadstate;
+    ExclusiveWrite32(&m_entries[index].currpadstate, entry->currpadstate);
+    ExclusiveWrite32(&m_entries[index].pressedpadstate, entry->pressedpadstate);
+    ExclusiveWrite32(&m_entries[index].releasedpadstate, entry->releasedpadstate);
+    ExclusiveWrite16((u16*)&m_entries[index].circlepadstate.x, 0);
+    ExclusiveWrite16((u16*)&m_entries[index].circlepadstate.y, 0);
     if(index == 0) // When index is 0 we need to update tickcount
     {
         m_oldtickcount = m_tickcount;
         m_tickcount = svcGetSystemTick();
     }
-    m_updatedindex = index;
+    ExclusiveWrite32(&m_updatedindex, index);
 }
