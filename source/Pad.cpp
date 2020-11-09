@@ -5,7 +5,7 @@ void Pad::Initialize()
     if(!m_isinitialized)
     {
         m_isinitialized = true;
-        m_latestkeys = IOHIDPAD ^ 0xFFF;
+        m_latestkeys = (vu32)(IOHIDPAD) ^ 0xFFF;
         svcCreateTimer(&m_timer, RESET_ONESHOT);
         svcCreateEvent(&m_event, RESET_ONESHOT);
     }
@@ -19,7 +19,7 @@ void Pad::SetTimer()
 
 void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw)
 {
-    volatile uint32_t latest = IOHIDPAD ^ 0xFFF;
+    volatile uint32_t latest = (vu32)(IOHIDPAD) ^ 0xFFF; 
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
     entry->pressedpadstate = (latest ^ m_latestkeys) & ~m_latestkeys;

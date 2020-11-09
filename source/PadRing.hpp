@@ -41,5 +41,6 @@ class PadRing
         uint32_t m_unk;
         uint32_t m_curpadstate;
         CirclePad m_circlepadraw;
+        uint32_t padding2;
         PadEntry m_entries[8];
 };
