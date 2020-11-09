@@ -10,7 +10,8 @@ void Hid::CreateAndMapMemoryBlock()
     signed int ret = svcCreateMemoryBlock(&m_sharedmemhandle, 0, 0x1000, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), MEMPERM_READ);
     if(R_SUCCEEDED(ret))
     {
-        m_addr = (void*)0x10000000;
+        mappableInit(0x10000000, 0x14000000);
+        m_addr = mappableAlloc(0x1000);
         if(m_addr)
         {
             ret = svcMapMemoryBlock(m_sharedmemhandle, (u32)m_addr, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), MEMPERM_DONTCARE);
@@ -30,12 +31,16 @@ void Hid::CreateAndMapMemoryBlock()
 void Hid::CreateRingsOnSharedmemoryBlock()
 {
     m_padring = new(m_addr) PadRing;
+    m_touchring = new((void*)((u32)(m_addr) + 0xA8))TouchRing;
 }
 
 void Hid::InitializePad()
 {
     m_pad.Initialize();
     m_pad.SetPadRing(m_padring);
+
+    m_touch.Initialize();
+    m_touch.SetTouchRing(m_touchring);
 }
 
 static void SamplingFunction(void *argv)
@@ -48,6 +53,7 @@ static void SamplingFunction(void *argv)
         ret = svcWaitSynchronization(*padtimer, U64_MAX);
         if(ret > 0) svcBreak(USERBREAK_ASSERT);
         hid->GetPad()->Sampling();
+        hid->GetTouch()->Sampling();
     }
 }
 
@@ -56,6 +62,7 @@ void Hid::StartThreadsForSampling()
     if(!m_samplingthreadstarted)
     {
         m_padring->Reset();
+        m_touchring->Reset();
         m_pad.SetTimer();
         MyThread_Create(&m_samplingthread, SamplingFunction, this, hidthreadstack, 0x1000, 0x15, -2);
         m_samplingthreadstarted = true;

@@ -72,6 +72,8 @@ extern "C"
 
     void __appInit() {
         srvSysInit();
+        gdbHioDevInit();
+        gdbHioDevRedirectStdStreams(false, true, false);
       //  logInit();
     }
 

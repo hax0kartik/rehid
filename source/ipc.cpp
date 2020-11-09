@@ -76,7 +76,7 @@ void IPC::HandleCommands(Hid *hid)
             cmdbuf[2] = 0x14000000;
             cmdbuf[3] = *hid->GetSharedMemHandle();
             cmdbuf[4] = *hid->GetPad()->GetEvent();
-            cmdbuf[5] = hid->dummyhandles[0];
+            cmdbuf[5] = *hid->GetTouch()->GetEvent();
             cmdbuf[6] = hid->dummyhandles[1];
             cmdbuf[7] = hid->dummyhandles[2];
             cmdbuf[8] = hid->dummyhandles[3];

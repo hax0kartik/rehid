@@ -19,7 +19,7 @@ void Pad::SetTimer()
 
 void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw)
 {
-    uint32_t latest = (u32)IOHIDPAD ^ 0xFFF;
+    volatile uint32_t latest = IOHIDPAD ^ 0xFFF;
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
     entry->pressedpadstate = (latest ^ m_latestkeys) & ~m_latestkeys;

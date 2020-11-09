@@ -1,5 +1,5 @@
+#pragma once
 #include <3ds.h>
-
 static void inline ExclusiveWrite32(s32 *addr, s32 val)
 {
     do
