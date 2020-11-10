@@ -7,7 +7,7 @@ static uint8_t ALIGN(8) hidthreadstack[0x1000];
 void Hid::CreateAndMapMemoryBlock()
 {
     // 0x1000 is rounded off size for 0x2B0
-    result ret = svcCreateMemoryBlock(&m_sharedmemhandle, 0, 0x1000, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), MEMPERM_READ);
+    Result ret = svcCreateMemoryBlock(&m_sharedmemhandle, 0, 0x1000, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), MEMPERM_READ);
     if(R_SUCCEEDED(ret))
     {
         mappableInit(0x10000000, 0x14000000);
@@ -86,7 +86,7 @@ void Hid::EnteringSleepMode()
 
 void Hid::ExitingSleepMode()
 {
-    LightLock_Unlock(&m_sleeplock); // Unlock lock and thhen reset timer
+    LightLock_Unlock(&m_sleeplock); // Unlock lock and then reset timer
     m_padring->Reset();
     m_touchring->Reset();
     m_pad.SetTimer();
