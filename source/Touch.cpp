@@ -12,7 +12,6 @@ void Touch::Initialize()
     {
         m_initialized = 1;
         svcCreateEvent(&m_event, RESET_ONESHOT);
-        if(R_FAILED(codecInit())) svcBreak(USERBREAK_ASSERT);
     }
 }
 
@@ -48,36 +47,30 @@ void Touch::RawToPixel(int *arr, TouchEntry *pixeldata, TouchEntry *rawdata)
     return;
 }
 
-void Touch::Sampling()
+void Touch::Sampling(u32 touchscreendata)
 {
-    Result ret = 0;
-    u32 dummy, touchscreendata;
     TouchEntry rawdata, pixdata;
     int arr[] = {51, 3276, 81940, 68, 4369, 61440};
-    ret = CDCHID_GetData(&touchscreendata, &dummy);
     //printf_("CDCHID_GetData ret: %08x, touchscreendata x: %d, y :%d dummy: %X\n", ret, touchscreendata & 0xFFF, (touchscreendata & 0xFFF000) >> 12, dummy);
-    if(ret == 0)
+    if (((touchscreendata & 0x1000000) >> 16) >> 16 && ((touchscreendata & 0x6000000) >> 25) & 0xFF)
     {
-        if (((touchscreendata & 0x1000000) >> 16) >> 16 && ((touchscreendata & 0x6000000) >> 25) & 0xFF)
-        {
-            rawdata.x = m_latest.x;
-            rawdata.y = m_latest.y;
-            rawdata.touch = m_latest.touch;
-        }
-        else
-        {
-            rawdata.x = m_latest.x = touchscreendata & 0xFFF;
-            rawdata.y = m_latest.y = (touchscreendata & 0xFFF000) >> 12;
-            rawdata.touch = m_latest.touch = (touchscreendata & 0x1000000) >> 24;
-        }
-
-        if(!rawdata.touch)
-            rawdata.x = rawdata.y = 0;
-
-        RawToPixel(arr, &pixdata, &rawdata);
-        m_ring->SetRaw(rawdata);
-        m_ring->WriteToRing(pixdata);
-
-        svcSignalEvent(m_event);
+        rawdata.x = m_latest.x;
+        rawdata.y = m_latest.y;
+        rawdata.touch = m_latest.touch;
     }
+    else
+    {
+        rawdata.x = m_latest.x = touchscreendata & 0xFFF;
+        rawdata.y = m_latest.y = (touchscreendata & 0xFFF000) >> 12;
+        rawdata.touch = m_latest.touch = (touchscreendata & 0x1000000) >> 24;
+    }
+
+    if(!rawdata.touch)
+        rawdata.x = rawdata.y = 0;
+
+    RawToPixel(arr, &pixdata, &rawdata);
+    m_ring->SetRaw(rawdata);
+    m_ring->WriteToRing(pixdata);
+
+    svcSignalEvent(m_event);
 }

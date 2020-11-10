@@ -5,6 +5,7 @@
 extern "C"
 {
     #include "mythread.h"
+    #include "codec.h"
 }
 class Hid
 {

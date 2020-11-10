@@ -1,5 +1,5 @@
 #include "Pad.hpp"
-
+#include "printf.h"
 void Pad::Initialize()
 {
     if(!m_isinitialized)
@@ -28,12 +28,17 @@ void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw)
     m_latestkeys = latest;
 }
 
-void Pad::Sampling()
+void Pad::Sampling(u32 rcpr)
 {
     PadEntry finalentry; uint32_t latest;
+    CirclePadEntry rawcirclepad;
+    rawcirclepad.x = rcpr & 0xFFF;
+    rawcirclepad.y = (rcpr & 0xFFF000) >> 12;
+    CirclePadEntry finalcirclepad;
     svcSetTimer(m_timer, 4000000LL, 0LL);
     ReadFromIO(&finalentry, &latest);
-    m_ring->SetCurrPadState(latest);
-    m_ring->WriteToRing(&finalentry);
+    m_circlepad.RawToCirclePadCoords(&finalcirclepad, rawcirclepad);
+    m_ring->SetCurrPadState(latest, rawcirclepad);
+    m_ring->WriteToRing(&finalentry, &finalcirclepad);
     svcSignalEvent(m_event);
 }

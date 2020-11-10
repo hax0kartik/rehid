@@ -36,6 +36,8 @@ void Hid::CreateRingsOnSharedmemoryBlock()
 
 void Hid::InitializePad()
 {
+    if(R_FAILED(codecInit())) svcBreak(USERBREAK_ASSERT);
+
     m_pad.Initialize();
     m_pad.SetPadRing(m_padring);
 
@@ -47,13 +49,18 @@ static void SamplingFunction(void *argv)
 {
     Hid *hid = (Hid*)argv;
     Result ret = 0;
+    u32 touchscreendata, circlepaddata;
     Handle *padtimer = hid->GetPad()->GetTimer();
     while(1)
     {
         ret = svcWaitSynchronization(*padtimer, U64_MAX);
         if(ret > 0) svcBreak(USERBREAK_ASSERT);
-        hid->GetPad()->Sampling();
-        hid->GetTouch()->Sampling();
+        ret = CDCHID_GetData(&touchscreendata, &circlepaddata);
+        if(ret == 0)
+        {
+            hid->GetPad()->Sampling(circlepaddata);
+            hid->GetTouch()->Sampling(touchscreendata);
+        }
     }
 }
 

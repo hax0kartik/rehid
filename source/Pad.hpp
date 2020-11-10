@@ -1,5 +1,6 @@
 #include <3ds.h>
 #include "PadRing.hpp"
+#include "CirclePad.hpp"
 #define IOHIDPAD *(vu16*)0x1EC46000
 
 class Pad
@@ -10,7 +11,7 @@ class Pad
         PadRing *GetPadRing() {return m_ring; };
         void SetTimer();
         Handle *GetTimer() { return &m_timer; };
-        void Sampling();
+        void Sampling(u32 rcpr);
         void ReadFromIO(PadEntry *entry, uint32_t *raw);
         Handle *GetEvent() {return &m_event; };
     private:
@@ -19,4 +20,5 @@ class Pad
         Handle m_timer;
         PadRing *m_ring = nullptr;
         Handle m_event;
+        CirclePad m_circlepad;
 };  
