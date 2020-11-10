@@ -51,7 +51,7 @@ static void SamplingFunction(void *argv)
     Result ret = 0;
     u32 touchscreendata, circlepaddata;
     Handle *padtimer = hid->GetPad()->GetTimer();
-    while(1)
+    while(!*hid->ExitThread())
     {
         ret = svcWaitSynchronization(*padtimer, U64_MAX);
         if(ret > 0) svcBreak(USERBREAK_ASSERT);
@@ -74,4 +74,19 @@ void Hid::StartThreadsForSampling()
         MyThread_Create(&m_samplingthread, SamplingFunction, this, hidthreadstack, 0x1000, 0x15, -2);
         m_samplingthreadstarted = true;
     }
+}
+
+void Hid::EnteringSleepMode()
+{
+    m_samplingthreadstarted = false;
+    m_exitthread = 1;
+    MyThread_Join(&m_samplingthread, U64_MAX);
+    PTMSYSM_NotifySleepPreparationComplete(0);
+}
+
+void Hid::ExitingSleepMode()
+{
+    m_exitthread = 0;
+    StartThreadsForSampling();
+    PTMSYSM_NotifySleepPreparationComplete(0);
 }

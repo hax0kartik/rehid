@@ -14,12 +14,13 @@ class Hid
         void CreateRingsOnSharedmemoryBlock();
         void StartThreadsForSampling();
         void InitializePad();
-        void EnteringSleepMode() {};
-        void ExitingSleepMode() {};
+        void EnteringSleepMode();
+        void ExitingSleepMode();
         void IsShellOpened(bool opened) {m_shellisopen = opened; };
         Pad *GetPad() {return &m_pad; };
         Touch *GetTouch() {return &m_touch; };
         Handle *GetSharedMemHandle() { return &m_sharedmemhandle; };
+        uint8_t *ExitThread() { return &m_exitthread; };
         Handle dummyhandles[4] = {0};
     private:
         Handle m_sharedmemhandle;
@@ -31,4 +32,5 @@ class Hid
         bool m_shellisopen = true;
         MyThread m_samplingthread;
         bool m_samplingthreadstarted = false;
+        uint8_t m_exitthread = 0;
 };

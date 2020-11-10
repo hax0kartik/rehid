@@ -74,11 +74,13 @@ extern "C"
         srvSysInit();
         gdbHioDevInit();
         gdbHioDevRedirectStdStreams(false, true, false);
+        ptmSysmInit();
       //  logInit();
     }
 
     // this is called after main exits
     void __appExit() {
+        ptmSysmExit();
         srvSysExit();
     }
 
