@@ -7,7 +7,7 @@ static uint8_t ALIGN(8) hidthreadstack[0x1000];
 void Hid::CreateAndMapMemoryBlock()
 {
     // 0x1000 is rounded off size for 0x2B0
-    signed int ret = svcCreateMemoryBlock(&m_sharedmemhandle, 0, 0x1000, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), MEMPERM_READ);
+    result ret = svcCreateMemoryBlock(&m_sharedmemhandle, 0, 0x1000, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), MEMPERM_READ);
     if(R_SUCCEEDED(ret))
     {
         mappableInit(0x10000000, 0x14000000);
@@ -23,9 +23,8 @@ void Hid::CreateAndMapMemoryBlock()
     }
     else svcBreak(USERBREAK_ASSERT);
     for(int i = 0; i < 4; i++)
-    {
         svcCreateEvent(&dummyhandles[i], RESET_ONESHOT);
-    }
+    LightLock_Init(&m_sleeplock);
 }
 
 void Hid::CreateRingsOnSharedmemoryBlock()
@@ -51,8 +50,10 @@ static void SamplingFunction(void *argv)
     Result ret = 0;
     u32 touchscreendata, circlepaddata;
     Handle *padtimer = hid->GetPad()->GetTimer();
+    LightLock *lock = hid->GetSleepLock();
     while(!*hid->ExitThread())
     {
+        LightLock_Lock(lock);
         ret = svcWaitSynchronization(*padtimer, U64_MAX);
         if(ret > 0) svcBreak(USERBREAK_ASSERT);
         ret = CDCHID_GetData(&touchscreendata, &circlepaddata);
@@ -61,6 +62,7 @@ static void SamplingFunction(void *argv)
             hid->GetPad()->Sampling(circlepaddata);
             hid->GetTouch()->Sampling(touchscreendata);
         }
+        LightLock_Unlock(lock);
     }
 }
 
@@ -78,15 +80,15 @@ void Hid::StartThreadsForSampling()
 
 void Hid::EnteringSleepMode()
 {
-    m_samplingthreadstarted = false;
-    m_exitthread = 1;
-    MyThread_Join(&m_samplingthread, U64_MAX);
+    LightLock_Lock(&m_sleeplock); // now that main thread accquired the lock, sampling thread will get stuck
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
 
 void Hid::ExitingSleepMode()
 {
-    m_exitthread = 0;
-    StartThreadsForSampling();
+    LightLock_Unlock(&m_sleeplock); // Unlock lock and thhen reset timer
+    m_padring->Reset();
+    m_touchring->Reset();
+    m_pad.SetTimer();
     PTMSYSM_NotifySleepPreparationComplete(0);
 }

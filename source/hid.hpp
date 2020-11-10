@@ -21,6 +21,7 @@ class Hid
         Touch *GetTouch() {return &m_touch; };
         Handle *GetSharedMemHandle() { return &m_sharedmemhandle; };
         uint8_t *ExitThread() { return &m_exitthread; };
+        LightLock *GetSleepLock() { return &m_sleeplock; };
         Handle dummyhandles[4] = {0};
     private:
         Handle m_sharedmemhandle;
@@ -33,4 +34,5 @@ class Hid
         MyThread m_samplingthread;
         bool m_samplingthreadstarted = false;
         uint8_t m_exitthread = 0;
+        LightLock m_sleeplock;
 };
