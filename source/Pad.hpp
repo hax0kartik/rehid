@@ -12,7 +12,7 @@ class Pad
         void SetTimer();
         Handle *GetTimer() { return &m_timer; };
         void Sampling(u32 rcpr);
-        void ReadFromIO(PadEntry *entry, uint32_t *raw);
+        void ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad);
         Handle *GetEvent() {return &m_event; };
     private:
         uint8_t m_isinitialized = 0;
