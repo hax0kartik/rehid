@@ -13,6 +13,7 @@ class Hid
         void CreateAndMapMemoryBlock();
         void CreateRingsOnSharedmemoryBlock();
         void StartThreadsForSampling();
+        void TakeOverIRRSTIfRequired();
         void InitializePad();
         void EnteringSleepMode();
         void ExitingSleepMode();

@@ -71,6 +71,8 @@ void IPC::HandleCommands(Hid *hid)
 
         case 0xA:
         {
+           // hid->TakeOverIRRSTIfRequired();
+            //svcBreak(USERBREAK_ASSERT);
             cmdbuf[0] = 0xA0047;
             cmdbuf[1] = 0;
             cmdbuf[2] = 0x14000000;

@@ -84,6 +84,16 @@ void Hid::EnteringSleepMode()
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
 
+void Hid::TakeOverIRRSTIfRequired()
+{
+    Result ret = 0;
+    do
+    {
+        svcSleepThread(0.1e+9);
+        ret = irrstInit();
+    } while (ret != 0);
+}
+
 void Hid::ExitingSleepMode()
 {
     LightLock_Unlock(&m_sleeplock); // Unlock lock and then reset timer

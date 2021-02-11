@@ -72,8 +72,9 @@ extern "C"
 
     void __appInit() {
         srvSysInit();
-        gdbHioDevInit();
-        gdbHioDevRedirectStdStreams(false, true, false);
+        fsSysInit();
+        //gdbHioDevInit();
+        //gdbHioDevRedirectStdStreams(false, true, false);
         ptmSysmInit();
       //  logInit();
     }
@@ -120,6 +121,7 @@ int main()
         ONERRSVCBREAK(ret);
     }
     
+    //hid.TakeOverIRRSTIfRequired();
     hid.CreateAndMapMemoryBlock();
     hid.CreateRingsOnSharedmemoryBlock();
     hid.InitializePad();

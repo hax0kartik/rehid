@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include "PadRing.hpp"
 #include "CirclePad.hpp"
+#include "Remapper.hpp"
 #define IOHIDPAD *(vu16*)0x1EC46000
 
 class Pad
@@ -21,4 +22,5 @@ class Pad
         PadRing *m_ring = nullptr;
         Handle m_event;
         CirclePad m_circlepad;
+        Remapper m_remapper;
 };  
