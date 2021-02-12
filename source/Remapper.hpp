@@ -16,6 +16,7 @@ struct key_s
 class Remapper
 {
     public:
+        void GenerateFileLocation();
         uint32_t Remap(uint32_t hidtstate);
         Result ReadConfigFile();
         void ParseConfigFile();
@@ -24,4 +25,5 @@ class Remapper
         uint8_t m_entries;
         char *m_filedata;
         uint64_t m_filedatasize;
+        char m_fileloc[30];
 };

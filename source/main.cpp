@@ -36,6 +36,12 @@ static Result HandleNotifications(Hid *hid, int *exit)
             break;
         }
 
+        case 0x10C: // Regular Application started
+        {
+            hid->GetPad()->RemapGenFileLoc();
+            break;
+        }
+
         case 0x213: // Sleep Opened
         {
             hid->IsShellOpened(true);
@@ -130,6 +136,7 @@ int main()
     ONERRSVCBREAK(srvEnableNotification(&handles[0]));
     ONERRSVCBREAK(srvSubscribe(0x104));
     ONERRSVCBREAK(srvSubscribe(0x105));
+    ONERRSVCBREAK(srvSubscribe(0x10C)); // This is not subscribed to by official hid
     ONERRSVCBREAK(srvSubscribe(0x213));
     ONERRSVCBREAK(srvSubscribe(0x214));
 

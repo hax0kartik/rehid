@@ -1,6 +1,20 @@
 #include <strings.h>
 #include "Remapper.hpp"
 #include "json.h"
+
+static Result PMDBG_GetCurrentAppInfo(FS_ProgramInfo *outProgramInfo, u32 *outPid, u32 *outLaunchFlags)
+{
+    Result ret = 0;
+    u32 *cmdbuf = getThreadCommandBuffer();
+    cmdbuf[0] = IPC_MakeHeader(0x100, 0, 0);
+    if(R_FAILED(ret = svcSendSyncRequest(*pmDbgGetSessionHandle()))) return ret;
+
+    memcpy(outProgramInfo, cmdbuf + 2, sizeof(FS_ProgramInfo));
+    *outPid = cmdbuf[6];
+    *outLaunchFlags = cmdbuf[7];
+    return cmdbuf[1];
+}
+
 // shamelessly stolen from newlib
 char *strtok_r(char *s, const char *delim, char **lasts)
 {
@@ -30,7 +44,7 @@ cont:
         }   
     }
 
-    if (c == 0) {		/* no non-delimiter characters */
+    if (c == 0) {       /* no non-delimiter characters */
         *lasts = NULL;
         return (NULL);
     }
@@ -75,7 +89,6 @@ static int keystrtokeyval(char *str)
         { "Y",      KEY_Y},
         { "ZL",     KEY_ZL},
         { "ZR",     KEY_ZR}
-
     };
     char *key; char *rest = nullptr;
     key = strtok_r(str, "+", &rest);
@@ -90,6 +103,40 @@ static int keystrtokeyval(char *str)
         key = strtok_r(NULL, "+", &rest);
     }
     return val;
+}
+
+static void hexItoa(u64 number, char *out, u32 digits, bool uppercase)
+{
+    const char hexDigits[] = "0123456789ABCDEF";
+    const char hexDigitsLowercase[] = "0123456789abcdef";
+    u32 i = 0;
+
+    while(number > 0)
+    {
+        out[digits - 1 - i++] = uppercase ? hexDigits[number & 0xF] : hexDigitsLowercase[number & 0xF];
+        number >>= 4;
+    }
+
+    while(i < digits) out[digits - 1 - i++] = '0';
+}
+
+void Remapper::GenerateFileLocation()
+{
+    pmDbgInit();
+    FS_ProgramInfo programinfo;
+    u64 tid;
+    u32 launchflags;
+    u32 pid;
+    char stid[16+1];
+    Result res = PMDBG_GetCurrentAppInfo(&programinfo, &pid, &launchflags);
+    if (R_FAILED(res)) *(u32*)res = 0xF00FBABB;
+    pmDbgExit();
+    hexItoa(programinfo.programId, stid, 16, true);
+    stid[16] = 0;
+    memset(m_fileloc, 0, 30);
+    strcpy(m_fileloc, "/rehid/");
+    strcat(m_fileloc, stid);
+    strcat(m_fileloc, "/rehid.json");
 }
 
 uint32_t Remapper::Remap(uint32_t hidstate)
@@ -109,7 +156,8 @@ uint32_t Remapper::Remap(uint32_t hidstate)
 Result Remapper::ReadConfigFile()
 {
     Handle fshandle;
-    Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/rehid.json"), FS_OPEN_READ, 0);
+    char globalfileloc[] = "/rehid/rehid.json";
+    Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, globalfileloc), FS_OPEN_READ, 0);
     if(ret) return ret;
     ret = FSFILE_GetSize(fshandle, &m_filedatasize);
     m_filedata = (char*)malloc(m_filedatasize + 1);

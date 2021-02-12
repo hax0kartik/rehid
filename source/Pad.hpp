@@ -15,6 +15,12 @@ class Pad
         void Sampling(u32 rcpr);
         void ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad);
         Handle *GetEvent() {return &m_event; };
+        void RemapGenFileLoc(){ 
+            m_remapper.GenerateFileLocation(); 
+            Result ret = m_remapper.ReadConfigFile();
+                if(ret != 0) *(u32*)ret = 0xF00F000A;
+            m_remapper.ParseConfigFile();
+        };
     private:
         uint8_t m_isinitialized = 0;
         uint32_t m_latestkeys = 0;

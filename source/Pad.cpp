@@ -6,9 +6,6 @@ void Pad::Initialize()
     {
         m_isinitialized = true;
         m_latestkeys = (vu32)(IOHIDPAD) ^ 0xFFF;
-        Result ret = m_remapper.ReadConfigFile();
-        if(ret != 0) *(u32*)ret = 0xF00F000A;
-        m_remapper.ParseConfigFile();
         svcCreateTimer(&m_timer, RESET_ONESHOT);
         svcCreateEvent(&m_event, RESET_ONESHOT);
     }
