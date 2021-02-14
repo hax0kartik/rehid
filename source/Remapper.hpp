@@ -25,5 +25,5 @@ class Remapper
         uint8_t m_entries;
         char *m_filedata;
         uint64_t m_filedatasize;
-        char m_fileloc[30];
+        char m_fileloc[40];
 };

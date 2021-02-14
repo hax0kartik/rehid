@@ -133,7 +133,7 @@ void Remapper::GenerateFileLocation()
     pmDbgExit();
     hexItoa(programinfo.programId, stid, 16, true);
     stid[16] = 0;
-    memset(m_fileloc, 0, 30);
+    memset(m_fileloc, 0, 40);
     strcpy(m_fileloc, "/rehid/");
     strcat(m_fileloc, stid);
     strcat(m_fileloc, "/rehid.json");
@@ -156,12 +156,17 @@ uint32_t Remapper::Remap(uint32_t hidstate)
 Result Remapper::ReadConfigFile()
 {
     Handle fshandle;
-    char globalfileloc[] = "/rehid/rehid.json";
-    Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, globalfileloc), FS_OPEN_READ, 0);
-    if(ret) return ret;
+   // char globalfileloc[] = "/rehid.json";
+    Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, m_fileloc), FS_OPEN_READ, 0);
+    if(ret) // Bindings for title not found, check if global profile is present
+    {
+        ret =  FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/rehid/rehid.json"), FS_OPEN_READ, 0);
+        if(ret) return -1; // global profile not found, do not appply any settings.
+    }
+
     ret = FSFILE_GetSize(fshandle, &m_filedatasize);
     m_filedata = (char*)malloc(m_filedatasize + 1);
-    if(!m_filedata) return -1;
+    if(!m_filedata) return -2;
     memset(m_filedata, 0, m_filedatasize);
     ret = FSFILE_Read(fshandle, NULL, 0, m_filedata, m_filedatasize);
     if(ret) return ret;

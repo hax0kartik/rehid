@@ -44,3 +44,12 @@ void Pad::Sampling(u32 rcpr)
     m_ring->WriteToRing(&finalentry, &finalcirclepad);
     svcSignalEvent(m_event);
 }
+
+void Pad::RemapGenFileLoc()
+{
+    m_remapper.GenerateFileLocation(); 
+    Result ret = m_remapper.ReadConfigFile();
+        if(ret == -1) return;
+        else if(ret) *(u32*)ret = 0xF00FBABE;
+    m_remapper.ParseConfigFile();
+}
