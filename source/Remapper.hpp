@@ -10,7 +10,7 @@ struct KeyState
 struct key_s
 {
     char key[10];
-    int val;
+    uint32_t val;
 };
 
 class Remapper

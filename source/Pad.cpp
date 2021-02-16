@@ -22,8 +22,8 @@ void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad)
     volatile uint32_t latest = (vu32)(IOHIDPAD) ^ 0xFFF; 
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
-    latest = m_remapper.Remap(latest);
     latest = m_circlepad.ConvertToHidButtons(circlepad, latest);
+    latest = m_remapper.Remap(latest);
     entry->pressedpadstate = (latest ^ m_latestkeys) & ~m_latestkeys;
     entry->releasedpadstate = (latest ^ m_latestkeys) & m_latestkeys;
     entry->currpadstate = latest;
@@ -39,6 +39,13 @@ void Pad::Sampling(u32 rcpr)
     CirclePadEntry finalcirclepad;
     svcSetTimer(m_timer, 4000000LL, 0LL);
     m_circlepad.RawToCirclePadCoords(&finalcirclepad, rawcirclepad);
+    if(!(m_counter % 3u))
+    {
+        m_slider.ReadValuesFromMCU();
+        float sliderval = m_slider.Normalize();
+        *(vu32*)0x1FF81080 = (u32)2.0f;
+    }
+    ++m_counter;
     ReadFromIO(&finalentry, &latest, finalcirclepad);
     m_ring->SetCurrPadState(latest, rawcirclepad);
     m_ring->WriteToRing(&finalentry, &finalcirclepad);

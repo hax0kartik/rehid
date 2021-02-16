@@ -2,6 +2,7 @@
 #include "PadRing.hpp"
 #include "CirclePad.hpp"
 #include "Remapper.hpp"
+#include "slider.hpp"
 #define IOHIDPAD *(vu16*)0x1EC46000
 
 class Pad
@@ -24,4 +25,6 @@ class Pad
         Handle m_event;
         CirclePad m_circlepad;
         Remapper m_remapper;
+        Slider m_slider;
+        uint8_t m_counter;
 };  

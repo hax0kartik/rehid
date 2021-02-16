@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include "hid.hpp"
 #include "ipc.hpp"
+#include "mcuhid.hpp"
 extern "C" {
     #include "csvc.h"
     #include "services.h"
@@ -79,6 +80,8 @@ extern "C"
     void __appInit() {
         srvSysInit();
         fsSysInit();
+        Result ret = mcuHidInit();
+        if(ret != 0) *(u32*)ret = 0xFFAA; 
         //gdbHioDevInit();
         //gdbHioDevRedirectStdStreams(false, true, false);
         ptmSysmInit();

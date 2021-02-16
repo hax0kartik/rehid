@@ -71,9 +71,9 @@ cont:
     /* NOTREACHED */
 }
 
-static int keystrtokeyval(char *str)
+static uint32_t keystrtokeyval(char *str)
 {
-    int val = 0;
+    uint32_t val = 0;
     static const key_s keys[] = {
         { "A",      KEY_A},
         { "B",      KEY_B},
@@ -88,7 +88,11 @@ static int keystrtokeyval(char *str)
         { "X",      KEY_X},
         { "Y",      KEY_Y},
         { "ZL",     KEY_ZL},
-        { "ZR",     KEY_ZR}
+        { "ZR",     KEY_ZR},
+        { "CRIGHT", KEY_CPAD_RIGHT},
+        { "CLEFT",  KEY_CPAD_LEFT},
+        { "CDOWN",  KEY_CPAD_DOWN},
+        { "CUP",    KEY_CPAD_UP}
     };
     char *key; char *rest = nullptr;
     key = strtok_r(str, "+", &rest);
@@ -177,7 +181,7 @@ Result Remapper::ReadConfigFile()
 void Remapper::ParseConfigFile()
 {
     json_value *value = json_parse(m_filedata, strlen(m_filedata));
-    //if(value == nullptr) svcBreak(USERBREAK_ASSERT);
+    if(value == nullptr) *(u32*)0xF00FFAAB = 0xF;
     int length = value->u.object.values[0].value->u.array.length;
     json_value *arr = value->u.object.values[0].value;
     m_entries = length;
