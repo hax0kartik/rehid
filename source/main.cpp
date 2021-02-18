@@ -39,7 +39,7 @@ static Result HandleNotifications(Hid *hid, int *exit)
 
         case 0x10C: // Regular Application started
         {
-            hid->GetPad()->RemapGenFileLoc();
+           // hid->GetPad()->RemapGenFileLoc();
             break;
         }
 

@@ -133,7 +133,7 @@ void Remapper::GenerateFileLocation()
     u32 pid;
     char stid[16+1];
     Result res = PMDBG_GetCurrentAppInfo(&programinfo, &pid, &launchflags);
-    if (R_FAILED(res)) *(u32*)res = 0xF00FBABB;
+    if (R_FAILED(res)) programinfo.programId = 0;
     pmDbgExit();
     hexItoa(programinfo.programId, stid, 16, true);
     stid[16] = 0;
