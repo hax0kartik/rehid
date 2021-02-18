@@ -28,13 +28,16 @@ class PadRing
             ExclusiveWrite16((u16*)&m_circlepadraw.y, circlepadentry.y);
             ExclusiveWrite32((s32*)&m_curpadstate, state);
         }
+        void Set3dSliderVal(float val){
+            m_3dsliderval = val;
+        }
         void WriteToRing(PadEntry *entry, CirclePadEntry *circlepadentry);
     private:
         int64_t m_tickcount = 0;
         int64_t m_oldtickcount = 0;
         int32_t m_updatedindex = 0;
         uint32_t padding;
-        uint32_t m_unk;
+        float m_3dsliderval = 0.0f;
         uint32_t m_curpadstate;
         CirclePadEntry m_circlepadraw;
         uint32_t padding2;

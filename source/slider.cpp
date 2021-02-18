@@ -11,6 +11,26 @@ void Slider::ReadValuesFromMCU()
         m_oldrawstate = m_rawstate;
 }
 
+void Slider::GetConfigSettings()
+{
+    struct bounds
+    {
+        int16_t lowerbound3d;
+        int16_t upperbound3d;
+        int16_t lowerboundsnd;
+        int16_t upperboundsnd;
+    };
+    bounds bound;
+
+    cfguInit();
+    Result ret = CFG_GetConfigInfoBlk4(8, 0x120000u, &bound);
+    cfguExit();
+    if(ret != 0) *(u32*)0xFFFF1234 = 0x901;
+
+    m_lowerbound = bound.lowerbound3d + 8;
+    m_upperbound = bound.upperbound3d - 8;
+}
+
 // We try to keep this function as close as possible to the function in the hid module
 float Slider::Normalize()
 {

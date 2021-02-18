@@ -1,11 +1,19 @@
 #include "Pad.hpp"
 #include "printf.h"
+
+extern void _putchar(char character);
+/*
+{
+    svcOutputDebugString(&character, 1);
+}
+*/
 void Pad::Initialize()
 {
     if(!m_isinitialized)
     {
         m_isinitialized = true;
         m_latestkeys = (vu32)(IOHIDPAD) ^ 0xFFF;
+        m_slider.GetConfigSettings();
         svcCreateTimer(&m_timer, RESET_ONESHOT);
         svcCreateEvent(&m_event, RESET_ONESHOT);
     }
@@ -33,21 +41,23 @@ void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad)
 void Pad::Sampling(u32 rcpr)
 {
     PadEntry finalentry; uint32_t latest;
+    static float sliderval = 0.0f;
     CirclePadEntry rawcirclepad;
     rawcirclepad.x = rcpr & 0xFFF;
     rawcirclepad.y = (rcpr & 0xFFF000) >> 12;
     CirclePadEntry finalcirclepad;
     svcSetTimer(m_timer, 4000000LL, 0LL);
     m_circlepad.RawToCirclePadCoords(&finalcirclepad, rawcirclepad);
-    if(!(m_counter % 3u))
+    if(m_counter % 3 == 0)
     {
         m_slider.ReadValuesFromMCU();
-        float sliderval = m_slider.Normalize();
-        *(vu32*)0x1FF81080 = (u32)2.0f;
+        sliderval = m_slider.Normalize();
+        *(float*)0x1FF81080 = sliderval;
     }
     ++m_counter;
     ReadFromIO(&finalentry, &latest, finalcirclepad);
     m_ring->SetCurrPadState(latest, rawcirclepad);
+    m_ring->Set3dSliderVal(sliderval);
     m_ring->WriteToRing(&finalentry, &finalcirclepad);
     svcSignalEvent(m_event);
 }
