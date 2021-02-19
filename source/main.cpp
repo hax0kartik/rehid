@@ -9,7 +9,7 @@ extern "C" {
 #define ONERRSVCBREAK(ret) if(R_FAILED(ret)) svcBreak(USERBREAK_ASSERT);
 
 #define MAX_SESSIONS 10
-#define SERVICE_ENDPOINTS 3
+#define SERVICE_ENDPOINTS 4
 
 static Result HandleNotifications(Hid *hid, int *exit)
 {
