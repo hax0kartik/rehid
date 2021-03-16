@@ -124,7 +124,7 @@ $(TOPDIR)/$(OUTPUTDIR)/exheader.bin	: $(OUTPUT).cxi
 	
 
 $(OUTPUT).cxi	: $(OUTPUT).elf
-	@makerom -f ncch -rsf ../hidre.rsf -o $@ -elf $<
+	@makerom -f ncch -rsf ../rehid.rsf -o $@ -elf $<
 
 $(OUTPUT).elf	:	$(OFILES)
 

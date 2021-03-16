@@ -30,6 +30,7 @@ void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad)
     volatile uint32_t latest = (vu32)(IOHIDPAD) ^ 0xFFF; 
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
+    m_rawkeys = latest;
     latest = m_circlepad.ConvertToHidButtons(circlepad, latest);
     latest = m_remapper.Remap(latest);
     entry->pressedpadstate = (latest ^ m_latestkeys) & ~m_latestkeys;

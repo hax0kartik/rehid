@@ -20,9 +20,10 @@ class Remapper
         uint32_t Remap(uint32_t hidtstate);
         Result ReadConfigFile();
         void ParseConfigFile();
-    private:
         KeyState m_remapstates[10]; // Support upto 10 remapable combos
         uint8_t m_entries;
+
+    private:
         char *m_filedata;
         uint64_t m_filedatasize;
         char m_fileloc[40];

@@ -71,7 +71,7 @@ void IPC::HandleCommands(Hid *hid)
 
         case 0xA:
         {
-           // hid->TakeOverIRRSTIfRequired();
+            //hid->TakeOverIRRSTIfRequired();
             //svcBreak(USERBREAK_ASSERT);
             hid->GetPad()->RemapGenFileLoc();
             cmdbuf[0] = 0xA0047;

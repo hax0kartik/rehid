@@ -16,10 +16,13 @@ class Pad
         void Sampling(u32 rcpr);
         void ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad);
         Handle *GetEvent() {return &m_event; };
+        Remapper *GetRemapperObject() { return &m_remapper; };
         void RemapGenFileLoc();
+        uint32_t *GetLatestRawKeys() { return &m_rawkeys; }
     private:
         uint8_t m_isinitialized = 0;
         uint32_t m_latestkeys = 0;
+        uint32_t m_rawkeys = 0;
         Handle m_timer;
         PadRing *m_ring = nullptr;
         Handle m_event;
