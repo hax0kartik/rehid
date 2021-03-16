@@ -148,7 +148,7 @@ uint32_t Remapper::Remap(uint32_t hidstate)
     uint32_t newstate = hidstate;
     for(int i = 0; i < m_entries; i++)
     {
-        if(((hidstate & KEY_ZL )||(hidstate & KEY_ZR)) && ((hidstate & m_remapstates[i].oldkey) == m_remapstates[i].oldkey))
+        if((hidstate & m_remapstates[i].oldkey) == m_remapstates[i].oldkey)
         {
             newstate = newstate ^ m_remapstates[i].newkey;
             newstate = newstate ^ m_remapstates[i].oldkey;
