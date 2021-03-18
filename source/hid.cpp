@@ -14,6 +14,39 @@ extern "C"
 #define PA_FROM_VA_PTR(addr)    PA_PTR(svcConvertVAToPA((const void *)(addr), false))
 #endif
 
+u8 *memsearch(u8 *startPos, const void *pattern, u32 size, u32 patternSize)
+{
+    const u8 *patternc = (const u8 *)pattern;
+    u32 table[256];
+
+    //Preprocessing
+    for(u32 i = 0; i < 256; i++)
+        table[i] = patternSize;
+    for(u32 i = 0; i < patternSize - 1; i++)
+        table[patternc[i]] = patternSize - i - 1;
+
+    //Searching
+    u32 j = 0;
+    while(j <= size - patternSize)
+    {
+        u8 c = startPos[j + patternSize - 1];
+        if(patternc[patternSize - 1] == c && memcmp(pattern, startPos + j, patternSize - 1) == 0)
+            return startPos + j;
+        j += table[c];
+    }
+
+    return NULL;
+}
+
+static inline void *decodeArmBranch(const void *src)
+{
+    u32 instr = *(const u32 *)src;
+    s32 off = (instr & 0xFFFFFF) << 2;
+    off = (off << 6) >> 6; // sign extend
+
+    return (void *)((const u8 *)src + 8 + off);
+}
+
 static uint8_t ALIGN(8) hidthreadstack[0x1000];
 void Hid::CreateAndMapMemoryBlock()
 {
@@ -137,32 +170,96 @@ extern "C" {
 
 Result irpatch_cb(Handle phandle, u32 textsz, u32 rosz, u32 rwsz, Remapper *remapper, uint32_t *latestkeys)
 {
-    u32 *start = (u32*)0x00200000;
-    u32 IRCodePatchFuncphys = (u32)PA_FROM_VA_PTR(&IRCodePatchFunc);
-    u32 remapperphys = (u32)PA_FROM_VA_PTR(remapper);
-    u32 latestkeysphys = (u32)PA_FROM_VA_PTR(latestkeys);
-    // r2 = Remapper object
-    u32 irHook[] = {
-        0xE59F2008, // ldr r2,  [pc, #4]
-        0xE59F3008, // ldr r3,  [pc, #4]
-        0xE59FC008, // ldr r12, [pc, #4]
-        0xE12FFF3C, // blx r12
-        remapperphys,
-        latestkeysphys,
-        IRCodePatchFuncphys,
-        0xE320F000, // NOP
-        0xE320F000, // NOP
-        0xE320F000, // NOP
+    u32 totalSize = textsz + rosz + rwsz;
+    static u32* hookLoc = NULL;
+    static u32* syncLoc = NULL;
+    static u32* cppFlagLoc = NULL;
+    static u32  origIrSync = 0;
+    static u32  origCppFlag = 0;
+
+    static bool patchPrepared = false;
+
+    static u32  irOrigReadingCode[5] = {
+        0xE5940000, // ldr r0, [r4]
+        0xE1A01005, // mov r1, r5
+        0xE3A03005, // mov r3, #5
+        0xE3A02011, // mov r2, #17
+        0x00000000  // (bl i2c_read_raw goes here)
     };
-    
-    for(; start < textsz + start; start++)
+
+    static u32  irHook[] = {
+        0xE5940000, // ldr r0, [r4]
+        0xE1A01005, // mov r1, r5
+        0xE59FC000, // ldr r12, [pc] (actually +8)
+        0xE12FFF3C, // blx r12
+        0x00000000  // irCodePhys goes here
+    };
+
+    static u32  syncHookCode[] = {
+        0xE5900000, // ldr r0, [r0]
+        0xEF000024, // svc 0x24
+        0xE3A00000, // mov r0, #0
+        0xE51FF004, // ldr pc, [pc, #-4]
+        0x00000000, // (return address goes here)
+    };
+
+    static const u32 irOrigWaitSyncCode[] = {
+            0xEF000024, // svc 0x24 (WaitSynchronization)
+            0xE1B01FA0, // movs r1, r0, lsr#31
+            0xE1A0A000, // mov r10, r0
+        }, irOrigWaitSyncCodeOld[] = {
+            0xE0AC6000, // adc r6, r12, r0
+            0xE5D70000, // ldrb r0, [r7]
+        }; // pattern for 8.1
+
+    static const u32 irOrigCppFlagCode[] = {
+            0xE3550000, // cmp r5, #0
+            0xE3A0B080, // mov r11, #0x80
+    };
+
+    u32 irDataPhys = (u32)PA_FROM_VA_PTR(latestkeys);
+    u32 irCodePhys = (u32)PA_FROM_VA_PTR(&IRCodePatchFunc);
+
+    u32 *off = (u32 *)memsearch((u8 *)0x00200000, &irOrigReadingCode, totalSize, sizeof(irOrigReadingCode) - 4);
+
+    u32 *off2 = (u32 *)memsearch((u8 *)0x00200000, &irOrigWaitSyncCode, totalSize, sizeof(irOrigWaitSyncCode));
+    if(off2 == NULL)
     {
-        if(*start == 0xE5DD0021)
-            break;
+        off2 = (u32 *)memsearch((u8 *)0x00200000, &irOrigWaitSyncCodeOld, totalSize, sizeof(irOrigWaitSyncCodeOld));
     }
-    start += 1;
-    u32 *patchoff = start;
-    memcpy(patchoff, &irHook, sizeof(irHook));
+
+    u32 *off3 = (u32 *)memsearch((u8 *)0x00200000, &irOrigCppFlagCode, totalSize, sizeof(irOrigCppFlagCode));
+
+    origIrSync = *off2;
+    origCppFlag = *off3;
+
+    *(void **)(irCodePhys + 8) = decodeArmBranch(off + 4) - 0x00100000;
+    *(void **)(irCodePhys + 12) = (void*)irDataPhys;
+
+    irHook[4] = irCodePhys;
+    irOrigReadingCode[4] = off[4]; // Copy the branch.
+    syncHookCode[4] = (u32)off2 - 0x00100000 + 4; // Hook return address
+
+    hookLoc = (u32*)PA_FROM_VA_PTR(off);
+    syncLoc = (u32*)PA_FROM_VA_PTR(off2);
+    cppFlagLoc = (u32*)PA_FROM_VA_PTR(off3);
+
+    memcpy(hookLoc, &irHook, sizeof(irHook));
+
+    // We keep the WaitSynchronization1 to avoid general slowdown because of the high cpu load
+    if (*syncLoc == 0xEF000024) // svc 0x24 (WaitSynchronization)
+    {
+        syncLoc[-1] = 0xE51FF004;
+        syncLoc[0] = (u32)PA_FROM_VA_PTR(&syncHookCode);
+    }
+    else
+    {
+        // This "NOP"s out a WaitSynchronisation1 (on the event bound to the 'IR' interrupt) or the check of a previous one
+        *syncLoc = 0xE3A00000; // mov r0, #0
+    }
+
+    // This NOPs out a flag check in ir:user's CPP emulation
+    *cppFlagLoc = 0xE3150000; // tst r5, #0
     svcInvalidateEntireInstructionCache();
     return (Result)0;
 }
