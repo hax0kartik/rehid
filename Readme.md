@@ -2,5 +2,46 @@
 
 HID module rewrite with the aim of easier button remapping and more.
 
-## How to Compile
+## How To Remap Buttons
+
+You first need to create a `rehid.json` file with the remappings you want. For eg:-
+```Json
+{
+    "remappings":[
+        {"get":"R", "press":"ZR"},
+        {"get":"L", "press":"ZL"}
+    ]
+}
+```
+With the above, everytime you press `ZR` key, `R` key would be triggered, 
+
+and everytime you press `ZL` key, `L` key would be triggered.
+
+It is also possible to custom key combos, i.e.,
+```Json
+{
+    "remappings":[
+        {"get":"R", "press":"X+Y"},
+        {"get":"L+R", "press":"SELECT"}
+    ]
+}
+```
+## How To Use
+
+You need to have the latest luma for this to work correctly.
+
+* Put the `0004013000001D02` folder in `luma/titles`
+* Create a folder named `rehid` on the root of your sd card
+* 
+
+
+## Compilation
 Get devkitpro, ctrulib and makerom and then `make -j` to compile.
+
+## Credits
+
+@luigoalma Help, testing and listening to my rants.
+
+Druivensap on my discord server for helping me test out .
+
+Luma3ds devs and contributors
