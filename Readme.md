@@ -8,7 +8,7 @@ You need to have the latest luma for this to work correctly.
 
 * Put the `0004013000001D02` folder in `luma/titles`
 
-* Create a folder named `rehid` on the root of your sd card and put the `rehid.json` file in the folder
+* Create a folder named `rehid` on the root of your sd card and put the `rehid.json` file in the folder (Check the [How-To-Remap-Buttons](https://github.com/hax0kartik/rehid#how-to-remap-buttons) part to create the rehid.json file)
 
 * Enable Title patching from luma menu. (As shown here: https://github.com/LumaTeam/Luma3DS/wiki/Optional-features)
 
@@ -42,6 +42,13 @@ Now everytime you press `X+Y`, `R` key would be triggered and on pressing `SELEC
 
 Copy your `rehid.json` file to the `rehid` folder.
 
+### Per Title Button Remapping
+
+It is possible to have different button remapings for different titles:-
+
+Inside the `rehid` folder, create a folder with the titleid as the folder name.
+
+Copy the `rehid.json` file inside this folder.
 
 ## Compilation
 Get devkitpro, ctrulib and makerom and then `make -j` to compile.
