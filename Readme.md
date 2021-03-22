@@ -40,6 +40,9 @@ It is also possible to do custom key combos, i.e.,
 ```
 Now everytime you press `X+Y`, `R` key would be triggered and on pressing `SELECT` button, both `L` and `R` would be triggered.
 
+Possible Keys are:- 
+`A`, `B`, `X`, `Y`, `SELECT`, `START`, `ZL`, `ZR`, `L`, `R`, `LEFT`, `RIGHT`, `UP`, `DOWN`, `CRIGHT`(CPAD), `CLEFT`(CPAD), `CUP`(CPAD), `CDOWN`(CPAD)
+
 Copy your `rehid.json` file to the `rehid` folder.
 
 ### Per Title Button Remapping
@@ -47,6 +50,8 @@ Copy your `rehid.json` file to the `rehid` folder.
 It is possible to have different button remapings for different titles:-
 
 Inside the `rehid` folder, create a folder with the titleid as the folder name.
+
+You can use [this](https://hax0kartik.github.io/3dsdb/) to fidn the titleid for your game.
 
 Copy the `rehid.json` file inside this folder.
 
