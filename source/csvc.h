@@ -77,7 +77,10 @@ void svcInvalidateEntireInstructionCache(void);
  * @param size Size of the block of the memory to map (truncated to a multiple of 0x1000 bytes).
 */
 Result svcMapProcessMemoryEx(Handle process, u32 destAddr, u32 srcAddr, u32 size);
-
+/*
+ Luma3ds-3gx variant
+*/
+Result svcMapProcessMemoryEx2(Handle dstProcessHandle, u32 destAddr, Handle srcProcessHandle, u32 srcAddr, u32 size);
 /**
  * @brief Unmaps a block of process memory.
  * @param process Handle of the process.

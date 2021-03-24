@@ -153,9 +153,13 @@ Result OperateOnProcessByName(const char *name, OperateOnProcessCb func, Remappe
     res = svcMapProcessMemoryEx(processHandle, 0x00200000, (u32) startAddress, neededMemory);
     if(R_FAILED(res))
     {
-        *(u32*)res = 0x213;
-        svcCloseHandle(processHandle);
-        return res;
+        res = svcMapProcessMemoryEx2(CUR_PROCESS_HANDLE, 0x00200000, processHandle, (u32) startAddress, neededMemory);
+        if(R_FAILED(res))
+        {
+            *(u32*)res = 0x213;
+            svcCloseHandle(processHandle);
+            return res;
+        }
     }
 
     res = func(processHandle, (u32)textTotalRoundedSize, (u32)rodataTotalRoundedSize, (u32)dataTotalRoundedSize, remapper, keys);
@@ -176,9 +180,6 @@ Result irpatch_cb(Handle phandle, u32 textsz, u32 rosz, u32 rwsz, Remapper *rema
     static u32* cppFlagLoc = NULL;
     static u32  origIrSync = 0;
     static u32  origCppFlag = 0;
-
-    static bool patchPrepared = false;
-
     static u32  irOrigReadingCode[5] = {
         0xE5940000, // ldr r0, [r4]
         0xE1A01005, // mov r1, r5
