@@ -1,10 +1,17 @@
 #pragma once
 #include <3ds.h>
 
-struct KeyState
+struct KeyObject
 {
     uint32_t oldkey; // Old Key Combo
     uint32_t newkey; // New Key Combo
+};
+
+struct TouchObject
+{
+    uint32_t key; 
+    uint16_t x;
+    uint16_t y; 
 };
 
 struct key_s
@@ -20,8 +27,12 @@ class Remapper
         uint32_t Remap(uint32_t hidtstate);
         Result ReadConfigFile();
         void ParseConfigFile();
-        KeyState m_remapstates[10]; // Support upto 10 remapable combos
-        uint8_t m_entries;
+        KeyObject m_remapkeyobjects[10]; // Support upto 10 remapable key combos
+        TouchObject m_remaptouchobjects[10]; // Support upto 10 key > touch binds
+        uint8_t m_keyentries;
+        uint8_t m_touchentries;
+        int16_t m_touchoveridex = 0;
+        int16_t m_touchoveridey = 0;
 
     private:
         char *m_filedata;

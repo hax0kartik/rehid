@@ -25,21 +25,21 @@ void Pad::SetTimer()
         svcBreak(USERBREAK_ASSERT);
 }
 
-void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad)
+void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad, Remapper *remapper)
 {
     volatile uint32_t latest = (vu32)(IOHIDPAD) ^ 0xFFF; 
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
     latest = m_circlepad.ConvertToHidButtons(circlepad, latest);
     latest = latest | m_rawkeys;
-    latest = m_remapper.Remap(latest);
+    latest = remapper->Remap(latest);
     entry->pressedpadstate = (latest ^ m_latestkeys) & ~m_latestkeys;
     entry->releasedpadstate = (latest ^ m_latestkeys) & m_latestkeys;
     entry->currpadstate = latest;
     m_latestkeys = latest;
 }
 
-void Pad::Sampling(u32 rcpr)
+void Pad::Sampling(u32 rcpr, Remapper *remapper)
 {
     PadEntry finalentry; uint32_t latest;
     static float sliderval = 0.0f;
@@ -56,18 +56,9 @@ void Pad::Sampling(u32 rcpr)
         *(float*)0x1FF81080 = sliderval;
     }
     ++m_counter;
-    ReadFromIO(&finalentry, &latest, finalcirclepad);
+    ReadFromIO(&finalentry, &latest, finalcirclepad, remapper);
     m_ring->SetCurrPadState(latest, rawcirclepad);
     m_ring->Set3dSliderVal(sliderval);
     m_ring->WriteToRing(&finalentry, &finalcirclepad);
     svcSignalEvent(m_event);
-}
-
-void Pad::RemapGenFileLoc()
-{
-    m_remapper.GenerateFileLocation(); 
-    Result ret = m_remapper.ReadConfigFile();
-        if(ret == -1) return;
-        else if(ret) *(u32*)ret = 0xF00FBABE;
-    m_remapper.ParseConfigFile();
 }

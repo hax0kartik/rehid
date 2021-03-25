@@ -13,7 +13,6 @@ class Hid
         void CreateAndMapMemoryBlock();
         void CreateRingsOnSharedmemoryBlock();
         void StartThreadsForSampling();
-        void TakeOverIRRSTIfRequired();
         void InitializePad();
         void EnteringSleepMode();
         void ExitingSleepMode();
@@ -23,6 +22,8 @@ class Hid
         Handle *GetSharedMemHandle() { return &m_sharedmemhandle; };
         uint8_t *ExitThread() { return &m_exitthread; };
         LightLock *GetSleepLock() { return &m_sleeplock; };
+        Remapper *GetRemapperObject() { return &m_remapper; };
+        void RemapGenFileLoc();
         Handle dummyhandles[4] = {0};
     private:
         Handle m_sharedmemhandle;
@@ -36,4 +37,5 @@ class Hid
         bool m_samplingthreadstarted = false;
         uint8_t m_exitthread = 0;
         LightLock m_sleeplock;
+        Remapper m_remapper;
 };

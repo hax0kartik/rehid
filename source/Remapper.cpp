@@ -146,12 +146,23 @@ void Remapper::GenerateFileLocation()
 uint32_t Remapper::Remap(uint32_t hidstate)
 {
     uint32_t newstate = hidstate;
-    for(int i = 0; i < m_entries; i++)
+    for(int i = 0; i < m_keyentries; i++)
     {
-        if((hidstate & m_remapstates[i].oldkey) == m_remapstates[i].oldkey)
+        if((hidstate & m_remapkeyobjects[i].oldkey) == m_remapkeyobjects[i].oldkey)
         {
-            newstate = newstate ^ m_remapstates[i].newkey;
-            newstate = newstate ^ m_remapstates[i].oldkey;
+            newstate = newstate ^ m_remapkeyobjects[i].newkey;
+            newstate = newstate ^ m_remapkeyobjects[i].oldkey;
+        }
+    }
+    m_touchoveridex = 0;
+    m_touchoveridey = 0;
+    for(int i = 0; i < m_touchentries; i++)
+    {
+        if((hidstate & m_remaptouchobjects[i].key) == m_remaptouchobjects[i].key)
+        {
+            newstate &= ~m_remaptouchobjects[i].key;
+            m_touchoveridex = m_remaptouchobjects[i].x;
+            m_touchoveridey = m_remaptouchobjects[i].y;
         }
     }
     return newstate;
@@ -182,13 +193,33 @@ void Remapper::ParseConfigFile()
 {
     json_value *value = json_parse(m_filedata, strlen(m_filedata));
     if(value == nullptr) *(u32*)0xF00FFAAB = 0xF;
-    int length = value->u.object.values[0].value->u.array.length;
-    json_value *arr = value->u.object.values[0].value;
-    m_entries = length;
-    for(int i = 0; i <length; i++)
+    m_touchentries = 0;
+    m_keyentries = 0;
+    for(int index = 0; index < value->u.object.length; index++ )
     {
-        // Process objects
-        m_remapstates[i].newkey = keystrtokeyval(arr->u.array.values[i]->u.object.values[0].value->u.string.ptr);
-        m_remapstates[i].oldkey = keystrtokeyval(arr->u.array.values[i]->u.object.values[1].value->u.string.ptr);
+        if(strcasecmp(value->u.object.values[index].name, "keys") == 0)
+        {
+            int length = value->u.object.values[index].value->u.array.length;
+            json_value *arr = value->u.object.values[index].value;
+            m_keyentries = length;
+            for(int i = 0; i < length; i++)
+            {
+                // Process key objects
+                m_remapkeyobjects[i].newkey = keystrtokeyval(arr->u.array.values[i]->u.object.values[0].value->u.string.ptr);
+                m_remapkeyobjects[i].oldkey = keystrtokeyval(arr->u.array.values[i]->u.object.values[1].value->u.string.ptr);
+            }
+        }
+        else if(strcasecmp(value->u.object.values[index].name, "touch") == 0)
+        {
+            int length = value->u.object.values[index].value->u.array.length; // size of touch entries
+            json_value *arr = value->u.object.values[index].value; // touch
+            m_touchentries = length;
+            for(int i = 0; i < length; i++)
+            {
+                m_remaptouchobjects[i].x = arr->u.array.values[i]->u.object.values[0].value->u.array.values[0]->u.integer;
+                m_remaptouchobjects[i].y = arr->u.array.values[i]->u.object.values[0].value->u.array.values[1]->u.integer;
+                m_remaptouchobjects[i].key = keystrtokeyval(arr->u.array.values[i]->u.object.values[1].value->u.string.ptr);
+            }
+        }
     }
 }

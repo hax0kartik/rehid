@@ -269,7 +269,7 @@ static void irPatch(void *argv)
 {
     Hid *hid = (Hid*)argv; 
     while(!isServiceUsable("ir:u")) svcSleepThread(1e+9); // Wait For service
-    Result res = OperateOnProcessByName("ir", irpatch_cb, hid->GetPad()->GetRemapperObject(), hid->GetPad()->GetLatestRawKeys());
+    Result res = OperateOnProcessByName("ir", irpatch_cb, hid->GetRemapperObject(), hid->GetPad()->GetLatestRawKeys());
 }
 
 static void SamplingFunction(void *argv)
@@ -288,8 +288,8 @@ static void SamplingFunction(void *argv)
         ret = CDCHID_GetData(&touchscreendata, &circlepaddata);
         if(ret == 0)
         {
-            hid->GetPad()->Sampling(circlepaddata);
-            hid->GetTouch()->Sampling(touchscreendata);
+            hid->GetPad()->Sampling(circlepaddata, hid->GetRemapperObject());
+            hid->GetTouch()->Sampling(touchscreendata, hid->GetRemapperObject());
         }
         LightLock_Unlock(lock);
     }
@@ -321,4 +321,13 @@ void Hid::ExitingSleepMode()
     m_touchring->Reset();
     m_pad.SetTimer();
     PTMSYSM_NotifySleepPreparationComplete(0);
+}
+
+void Hid::RemapGenFileLoc()
+{
+    m_remapper.GenerateFileLocation(); 
+    Result ret = m_remapper.ReadConfigFile();
+        if(ret == -1) return;
+        else if(ret) *(u32*)ret = 0xF00FBABE;
+    m_remapper.ParseConfigFile();
 }
