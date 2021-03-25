@@ -181,7 +181,7 @@ Result Remapper::ReadConfigFile()
 
     ret = FSFILE_GetSize(fshandle, &m_filedatasize);
     m_filedata = (char*)malloc(m_filedatasize + 1);
-    if(!m_filedata) return -2;
+    if(m_filedata == nullptr) return -2;
     memset(m_filedata, 0, m_filedatasize);
     ret = FSFILE_Read(fshandle, NULL, 0, m_filedata, m_filedatasize);
     if(ret) return ret;
@@ -191,8 +191,8 @@ Result Remapper::ReadConfigFile()
 
 void Remapper::ParseConfigFile()
 {
-    json_value *value = json_parse(m_filedata, strlen(m_filedata));
-    if(value == nullptr) *(u32*)0xF00FFAAB = 0xF;
+    json_value *value = json_parse(m_filedata, m_filedatasize);
+    if(value == nullptr) *(u32*)0xF00FFAAB = m_filedata[m_filedatasize - 2];
     m_touchentries = 0;
     m_keyentries = 0;
     for(int index = 0; index < value->u.object.length; index++ )
@@ -222,4 +222,5 @@ void Remapper::ParseConfigFile()
             }
         }
     }
+    json_value_free(value);
 }
