@@ -20,5 +20,5 @@ chmod +x /usr/bin/makerom && chmod +x /usr/bin/ctrtool
 make clean && make -j2
 
 #Move files
-mkdir 0004013000001D02
-mv . /0004013000001D02/
+mkdir 0004013000001D02/0004013000001D02
+mv 0004013000001D02/* 0004013000001D02/0004013000001D02/
