@@ -33,7 +33,7 @@ void Touch::RawToPixel(int *arr, TouchEntry *pixeldata, TouchEntry *rawdata)
         int64_t pxy = (((v5 * arr[5]) >> 22) | (((arr[5] * v5) >> 32) << 10));
         if(pxy >= 5 && pxy <= 234)
             pixeldata->y = pxy;
-        else if(pxx <= 5)
+        else if(pxy <= 5)
             pixeldata->y = 5;
         else
             pixeldata->y = 234;   
