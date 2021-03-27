@@ -18,6 +18,3 @@ chmod +x /usr/bin/makerom && chmod +x /usr/bin/ctrtool
 
 #Build rehid
 make clean && make -j2
-
-#Move file
-mkdir 0004013000001D02
