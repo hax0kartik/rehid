@@ -223,4 +223,5 @@ void Remapper::ParseConfigFile()
         }
     }
     json_value_free(value);
+    free(m_filedata);
 }

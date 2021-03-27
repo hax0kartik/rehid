@@ -265,11 +265,35 @@ Result irpatch_cb(Handle phandle, u32 textsz, u32 rosz, u32 rwsz, Remapper *rema
     return (Result)0;
 }
 
-static void irPatch(void *argv)
+static Result IRRST_Initialize_(Handle *irrsthandle, u32 unk1, u8 unk2)
 {
-    Hid *hid = (Hid*)argv; 
+	u32* cmdbuf=getThreadCommandBuffer();
+	cmdbuf[0]=IPC_MakeHeader(0x2,2,0); // 0x20080
+	cmdbuf[1]=unk1;
+	cmdbuf[2]=unk2;
+
+	Result ret=0;
+	if(R_FAILED(ret=svcSendSyncRequest(*irrsthandle)))return ret;
+
+	return cmdbuf[1];
+}
+static void irPatch(void *argv)
+
+
+{
+    Hid *hid = (Hid*)argv;
     while(!isServiceUsable("ir:u")) svcSleepThread(1e+9); // Wait For service
-    Result res = OperateOnProcessByName("ir", irpatch_cb, hid->GetRemapperObject(), hid->GetPad()->GetLatestRawKeys());
+    srvSetBlockingPolicy(true);
+    Handle irhandle;
+    Result ret = srvGetServiceHandle(&irhandle, "ir:rst");
+    if(ret == 0) {
+        ret = IRRST_Initialize_(&irhandle, 10, 1);
+        if(ret) *(u32*)0xFABCDEFA = ret;
+    }
+    else if(ret != 0xD0401834)
+        *(u32*)0xFABCDEFB = ret;
+    srvSetBlockingPolicy(false);
+    OperateOnProcessByName("ir", irpatch_cb, hid->GetRemapperObject(), hid->GetPad()->GetLatestRawKeys());
 }
 
 static void SamplingFunction(void *argv)
