@@ -1,0 +1,393 @@
+         w __deregister_frame_info
+         w __register_frame_info
+00000000 a shift
+00000000 a shift
+00100000 A __start__
+00100000 T _start
+00100008 T __service_ptr
+0010000c T __apt_appid
+00100010 T __heap_size
+00100014 T __linear_heap_size
+00100018 T __system_arglist
+0010001c T __system_runflags
+00100020 t startup
+00100058 t ClearMem
+0010006c t ClrLoop
+00100094 T _init
+001000ac t .udivsi3_skip_div0_test
+001000ac T __aeabi_uidiv
+001000ac 000001ec T __udivsi3
+00100298 00000020 T __aeabi_uidivmod
+001002b8 T __aeabi_idiv
+001002b8 00000220 T __divsi3
+001002c0 t .divsi3_skip_div0_test
+001004d8 00000020 T __aeabi_idivmod
+001004f8 00000004 W __aeabi_idiv0
+001004f8 00000004 W __aeabi_ldiv0
+001004fc T __aeabi_drsub
+00100504 000002b0 T __aeabi_dsub
+00100504 000002b0 T __subdf3
+00100508 000002ac T __adddf3
+00100508 000002ac T __aeabi_dadd
+001007b4 00000024 T __aeabi_ui2d
+001007b4 00000024 T __floatunsidf
+001007d8 00000028 T __aeabi_i2d
+001007d8 00000028 T __floatsidf
+00100800 00000048 T __aeabi_f2d
+00100800 00000048 T __extendsfdf2
+00100848 00000074 T __aeabi_ul2d
+00100848 00000074 T __floatundidf
+0010085c 00000060 T __aeabi_l2d
+0010085c 00000060 T __floatdidf
+001008bc T __aeabi_ldivmod
+00100990 T __aeabi_uldivmod
+001009cc t __do_global_dtors_aux
+00100a0c t frame_dummy
+00100a38 00000154 T CirclePad::RawToCirclePadCoords(CirclePadEntry*, CirclePadEntry)
+00100b8c 000000cc T CirclePad::AdjustValues(short*, short*, int, int, int, int)
+00100c58 000000f0 T CirclePad::ConvertToHidButtons(CirclePadEntry, unsigned long)
+00100d48 00000058 T Pad::Initialize()
+00100da0 0000004c T Pad::SetTimer()
+00100dec 000000c4 T Pad::ReadFromIO(PadEntry*, unsigned long*, CirclePadEntry, Remapper*)
+00100eb0 00000148 T Pad::Sampling(unsigned long, Remapper*)
+00100ff8 00000118 T PadRing::WriteToRing(PadEntry*, CirclePadEntry*)
+00101110 00000094 T strtok_r(char*, char const*, char**)
+001011a4 00000094 t keystrtokeyval(char*)
+00101238 00000174 T Remapper::GenerateFileLocation()
+001013ac 00000094 T Remapper::Remap(unsigned long)
+00101440 00000140 T Remapper::ReadConfigFile()
+00101580 000001bc T Remapper::ParseConfigFile()
+0010173c 00000020 T Touch::Initialize()
+0010175c 000001fc T Touch::Sampling(unsigned long, Remapper*)
+00101958 000000c0 T TouchRing::WriteToRing(TouchEntry)
+00101a18 000000e0 T memsearch(unsigned char*, void const*, unsigned long, unsigned long)
+00101af8 000001e8 T irpatch_cb(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*)
+00101ce0 000000ac T Hid::CreateAndMapMemoryBlock()
+00101d90 00000048 T Hid::CreateRingsOnSharedmemoryBlock()
+00101dd8 00000044 T Hid::InitializePad()
+00101e1c 000000d4 T OpenProcessByName(char const*, unsigned long*)
+00101ef0 00000140 T OperateOnProcessByName(char const*, long (*)(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*), Remapper*, unsigned long*)
+00102030 00000194 t SamplingFunction(void*)
+001021c4 0000008c T Hid::StartThreadsForSampling()
+00102250 00000018 T Hid::EnteringSleepMode()
+00102268 00000050 T Hid::ExitingSleepMode()
+001022b8 0000003c T Hid::RemapGenFileLoc()
+001022f4 000002a8 T IPC::HandleCommands(Hid*)
+0010259c 00000074 T __system_allocateHeaps
+00102610 00000038 T initSystem
+00102648 00000018 T __ctru_exit
+00102660 00000390 T main
+001029f0 00000014 T mcuHidInit()
+00102a04 00000038 T mcuHidGetSliderState(unsigned char*)
+00102a3c 00000028 T Slider::ReadValuesFromMCU()
+00102a64 0000005c T Slider::GetConfigSettings()
+00102ac0 000000e0 T Slider::Normalize()
+00102ba0 00000084 T codecInit
+00102c24 00000048 T CDCHID_GetData
+00102c6c 00000004 t default_free
+00102c70 00000018 t default_alloc
+00102c88 000000cc t json_value_free_ex.part.0
+00102d54 00000230 t new_value
+00102f88 00001568 T json_parse_ex
+001044f0 00000040 T json_parse
+00104530 00000048 T json_value_free
+00104578 00000010 t _thread_begin
+00104588 00000034 T MyThread_Create
+001045bc 000000e8 T srvSysInit
+001046a4 0000008c T srvSysExit
+00104730 00000034 T fsSysInit
+00104764 T svcConvertVAToPA
+0010476c T svcInvalidateEntireInstructionCache
+00104774 T svcMapProcessMemoryEx
+0010477c T svcMapProcessMemoryEx2
+00104790 T svcUnmapProcessMemoryEx
+00104798 T svcControlMemoryEx
+001047b8 0000000c T __sync_init
+001047c4 00000018 T __sync_fini
+001047dc 0000001c T LightLock_Init
+001047f8 00000094 T LightLock_Lock
+0010488c 00000044 T LightLock_TryLock
+001048d0 00000040 T LightLock_Unlock
+00104910 00000024 T RecursiveLock_Init
+00104934 00000030 T RecursiveLock_Lock
+00104964 00000078 T RecursiveLock_TryLock
+001049dc 00000054 T RecursiveLock_Unlock
+00104a30 0000000c T srvSetBlockingPolicy
+00104a3c 0000000c T srvGetSessionHandle
+00104a48 00000034 T srvRegisterClient
+00104a7c 00000040 T srvEnableNotification
+00104abc 00000070 T srvRegisterService
+00104b2c 00000080 T srvGetServiceHandleDirect
+00104bac 00000048 T srvGetServiceHandle
+00104bf4 00000034 T srvSubscribe
+00104c28 00000040 T srvReceiveNotification
+00104c68 00000074 T srvIsServiceRegistered
+00104cdc 00000094 t mappableFindAddressWithin
+00104d70 00000028 T mappableInit
+00104d98 00000080 T mappableAlloc
+00104e18 000000a4 T cfguInit
+00104ebc 0000003c T cfguExit
+00104ef8 0000004c T CFG_GetConfigInfoBlk4
+00104f44 00000084 T fsMakePath
+00104fc8 0000000c T fsGetSessionHandle
+00104fd4 000000d4 T FSUSER_OpenFileDirectly
+001050a8 00000030 T FSUSER_InitializeWithSdkVersion
+001050d8 00000048 T FSUSER_SetPriority
+00105120 00000058 T FSFILE_Read
+00105178 00000038 T FSFILE_GetSize
+001051b0 0000003c T FSFILE_Close
+001051ec 00000074 T pmDbgInit
+00105260 0000003c T pmDbgExit
+0010529c 0000000c T pmDbgGetSessionHandle
+001052a8 00000074 T ptmSysmInit
+0010531c 0000003c T ptmSysmExit
+00105358 0000003c T PTMSYSM_NotifySleepPreparationComplete
+00105394 00000030 t __libctru_nanosleep
+001053c4 00000030 t __libctru_get_reent
+001053f4 000000f8 T __system_initSyscalls
+001054ec T svcQueryMemory
+0010551c T svcExitProcess
+00105524 T svcCreateThread
+00105544 T svcExitThread
+0010554c T svcSleepThread
+00105554 T svcCreateEvent
+00105568 T svcSignalEvent
+00105570 T svcCreateTimer
+00105584 T svcSetTimer
+0010559c T svcCreateMemoryBlock
+001055b4 T svcMapMemoryBlock
+001055bc T svcCreateAddressArbiter
+001055d0 T svcArbitrateAddressNoTimeout
+001055d8 T svcCloseHandle
+001055e0 T svcWaitSynchronization
+001055e8 T svcDuplicateHandle
+001055fc T svcGetSystemTick
+00105604 T svcGetProcessInfo
+0010561c T svcConnectToPort
+00105630 T svcSendSyncRequest
+00105638 T svcOpenProcess
+0010564c T svcBreak
+00105654 T svcAcceptSession
+0010566c T svcReplyAndReceive
+00105684 T svcGetProcessList
+00105698 00000084 W envGetHandle
+0010571c 00000054 T osGetTimeRef
+00105770 000000e4 T osGetTime
+00105854 00000074 T __libctru_gtod
+001058c8 000006f8 T pow
+00105fc0 00000164 T floor
+00106128 00000074 T sqrt
+0010619c 00000008 T __ieee754_sqrt
+001061a4 00000024 t with_errno
+001061c8 00000028 t xflow
+001061f0 00000010 T __math_uflow
+00106200 00000010 T __math_oflow
+00106210 00000050 T __math_divzero
+00106260 0000001c T __math_invalid
+0010627c 00000014 T __math_check_uflow
+00106290 00000028 T __math_check_oflow
+001062b8 00000120 T __udivmoddi4
+001063d8 00000028 T calloc
+00106400 00000094 T _calloc_r
+00106494 0000000c T __errno
+001064a0 00000034 T exit
+001064d4 0000003c T __libc_fini_array
+00106510 0000007c T __libc_init_array
+0010658c 00000020 T malloc
+001065ac 00000020 T free
+001065cc 000007f0 T _malloc_r
+00106dbc 000000a8 T memcmp
+00106e64 0000011c T memcpy
+00106f80 00000118 T memset
+00107098 0000000c T __malloc_lock
+001070a4 0000000c T __malloc_unlock
+001070b0 00000064 T sprintf
+00107114 00000064 T strcasecmp
+00107178 000000f0 T strcpy
+00107268 0000005c T strlen
+001072c4 000000dc T strncmp
+001073a0 000000c0 T strncpy
+00107460 00000048 T strnlen
+001074a8 0000064c t get_arg
+00107af8 00003808 T _svfprintf_r
+0010b300 00000054 T _wcrtomb_r
+0010b354 00000028 T _wcsrtombs_r
+0010b37c 00000114 T __call_exitprocs
+0010b490 000001a8 t quorem
+0010b638 000012ec T _dtoa_r
+0010c924 000000f8 T _malloc_trim_r
+0010ca1c 000002e4 T _free_r
+0010cd00 0000000c T _localeconv_r
+0010cd0c 00000010 T __locale_mb_cur_max
+0010cd1c 000002fc T __utf8_mbtowc
+0010d018 000000e0 T memchr
+0010d0f8 00000088 T _Balloc
+0010d180 0000001c T _Bfree
+0010d19c 000000f4 T __multadd
+0010d290 00000058 T __hi0bits
+0010d2e8 0000009c T __lo0bits
+0010d384 000000a4 T __i2b
+0010d428 00000204 T __multiply
+0010d62c 00000120 T __pow5mult
+0010d74c 0000013c T __lshift
+0010d888 00000058 T __mcmp
+0010d8e0 000001cc T __mdiff
+0010daac 0000012c T __d2b
+0010dbd8 000000a8 T frexp
+0010dc80 00000188 T __ssprint_r
+0010de08 00000190 T _wcsnrtombs_l
+0010df98 0000004c T _wcsnrtombs_r
+0010dfe4 000000f0 T __utf8_wctomb
+0010e0d4 0000005c T __assert_func
+0010e130 0000003c T fiprintf
+0010e16c 00000154 T memmove
+0010e2c0 00000598 T _realloc_r
+0010e858 0000064c t get_arg
+0010eea4 00000034 T __sprint_r
+0010eed8 00002584 T _vfiprintf_r
+0011145c 000000d4 t __sbprintf
+00111530 00000154 T __swsetup_r
+00111684 00000014 T abort
+00111698 00000258 T __sflush_r
+001118f0 00000094 T _fflush_r
+00111984 0000000c T _cleanup_r
+00111990 00000184 T __sinit
+00111b14 0000000c T __sfp_lock_acquire
+00111b20 0000000c T __sfp_lock_release
+00111b2c 000004a4 T __sfvwrite_r
+00111fd0 00000070 T _fwalk_reent
+00112040 00000138 T __smakebuf_r
+00112178 00000098 T _raise_r
+00112210 00000020 T raise
+00112230 00000044 T __sread
+00112274 00000068 T __swrite
+001122dc 00000048 T __sseek
+00112324 00000008 T __sclose
+0011232c 00000160 T _fclose_r
+0011248c 00000078 T _fstat_r
+00112504 00000014 T _getpid_r
+00112518 00000008 T _isatty_r
+00112520 00000014 T _kill_r
+00112534 00000084 T _lseek_r
+001125b8 00000080 T _read_r
+00112638 00000078 T _sbrk_r
+001126b0 00000080 T _write_r
+00112730 00000024 T _exit
+00112754 00000008 T __flockfile
+0011275c 00000008 T __funlockfile
+00112764 00000018 T __libc_lock_acquire
+0011277c 00000018 T __libc_lock_release
+00112794 00000018 T __libc_lock_init_recursive
+001127ac 00000018 T __libc_lock_acquire_recursive
+001127c4 00000018 T __libc_lock_release_recursive
+001127dc 00000018 T __libc_lock_close_recursive
+001127f4 0000003c T __get_handle
+00112830 000000f4 T _close_r
+00112924 00000028 T __getreent
+0011294c 00000008 t null_write
+00112954 T _fini
+00113060 00000120 r keystrtokeyval(char*)::keys
+00113194 00000008 r irpatch_cb(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*)::irOrigCppFlagCode
+0011319c 0000000c r irpatch_cb(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*)::irOrigWaitSyncCode
+001131a8 00000008 r irpatch_cb(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*)::irOrigWaitSyncCodeOld
+00113488 00000026 r CSWTCH.80
+001134c0 R IRCodePatchFunc
+001134c8 r i2c_readdeviceraw_addr
+001134cc r redirected_input_addr
+001134d0 r skip_vars
+001134d4 r ir_check_i2c
+00113528 r checkZR
+0011353c r checkZL
+00113550 r return
+00113590 00000870 R __exp_data
+00113e00 00001048 R __pow_log_data
+00114e48 00000101 R _ctype_
+00114f4c 00000004 R _global_impure_ptr
+00114f8c 00000010 r blanks.1
+00114f9c 00000010 r zeroes.0
+00114fbc r .LC2
+001150a0 00000028 R __mprec_bigtens
+001150c8 000000c8 R __mprec_tens
+00115190 0000000c r p05.0
+0011519c 0000006c R __action_table
+00115208 00000100 R __chclass
+00115308 0000006c R __state_table
+001153b4 00000010 r blanks.1
+001153c4 00000010 r zeroes.0
+001153dc 00000070 R dotab_stdnull
+0011544c r 
+0011544c R __exidx_end
+0011544c R __exidx_start
+00116000 00000014 d irpatch_cb(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*)::syncHookCode
+00116014 00000014 d irpatch_cb(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*)::irOrigReadingCode
+00116028 00000014 d irpatch_cb(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*)::irHook
+0011603c 00000001 D __fdlib_version
+00116040 00000004 D _impure_ptr
+00116048 00000460 d impure_data
+001164a8 00000408 D __malloc_av_
+001168b0 00000004 D __malloc_sbrk_base
+001168b4 00000004 D __malloc_trim_threshold
+001168b8 0000000c d __malloc_recursive_mutex
+001168c4 0000000c D __atexit_recursive_mutex
+001168d0 0000016c D __global_locale
+00116a3c 0000000c d __sfp_recursive_mutex
+00116a48 0000000c d __sinit_recursive_mutex
+00116a54 00000004 d __hndl_lock
+00116a58 0000000c d __stderr_handle
+00116a64 0000000c d __stdin_handle
+00116a70 0000000c d __stdout_handle
+00116a7c 00001000 d handles
+00117a7c 0000008c D devoptab_list
+00117b08 d __frame_dummy_init_array_entry
+00117b08 D __init_array_start
+00117b08 B __preinit_array_end
+00117b08 B __preinit_array_start
+00117b08 D __tdata_lma
+00117b08 D __tdata_lma_end
+00117b0c d __do_global_dtors_aux_fini_array_entry
+00117b0c D __fini_array_start
+00117b0c D __init_array_end
+00117b10 D __bss_start__
+00117b10 D __fini_array_end
+00117b10 b completed.1
+00117b14 b object.0
+00117b2c 00000004 b Pad::Sampling(unsigned long, Remapper*)::sliderval
+00117b30 00001000 b hidthreadstack
+00118b30 00000004 b irpatch_cb(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*)::cppFlagLoc
+00118b34 00000004 b irpatch_cb(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*)::hookLoc
+00118b38 00000004 b irpatch_cb(unsigned long, unsigned long, unsigned long, unsigned long, Remapper*, unsigned long*)::syncLoc
+00118b3c 00000004 B mcuHidHandle
+00118b40 00000004 b Slider::Normalize()::v1
+00118b44 00000004 b Slider::Normalize()::fval1
+00118b48 00000004 B cdchandle
+00118b4c 0000000c b initLock
+00118b58 00000004 b srvHandlePtr
+00118b5c 00000004 b srvRefCount
+00118b60 00000004 b arbiter
+00118b64 00000004 b srvHandle
+00118b68 00000004 b currentAddr
+00118b6c 00000004 b maxAddr
+00118b70 00000004 b minAddr
+00118b74 00000004 b cfguHandle
+00118b78 00000004 b cfguRefCount
+00118b7c 00000004 b fsuHandle
+00118b80 00000004 b pmDbgHandle
+00118b84 00000004 b pmDbgRefcount
+00118b88 00000004 b ptmSysmHandle
+00118b8c 00000004 b ptmSysmRefCount
+00118b90 00000004 B __ctru_heap
+00118b94 00000004 V __ctru_heap_size
+00118b98 00000004 B __system_argc
+00118b9c 00000004 B __system_argv
+00118ba0 00000028 B __malloc_current_mallinfo
+00118bc8 00000004 B __malloc_max_sbrked_mem
+00118bcc 00000004 B __malloc_max_total_mem
+00118bd0 00000004 B __malloc_top_pad
+00118bd4 00000004 b heap_start.0
+00118bd8 00000004 B fake_heap_end
+00118bdc 00000004 B fake_heap_start
+00118be0 00000048 B __syscalls
+00118c28 B __bss_end__
+00118c28 A __end__
+00118c28 B __tls_end
+00118c28 B __tls_start
