@@ -3,6 +3,7 @@
 #include "hid.hpp"
 #include "PadRing.hpp"
 #include <cstring>
+//#include "ir.hpp"
 extern "C"
 {
     #include "csvc.h"
@@ -73,8 +74,9 @@ void Hid::CreateAndMapMemoryBlock()
 
 void Hid::CreateRingsOnSharedmemoryBlock()
 {
-    m_padring = new(m_addr) PadRing;
+    m_padring = new(m_addr)PadRing;
     m_touchring = new((void*)((u32)(m_addr) + 0xA8))TouchRing;
+    m_accelring = new((void*)((u32)(m_addr) + 0x108))AccelerometerRing;
 }
 
 void Hid::InitializePad()
@@ -86,6 +88,12 @@ void Hid::InitializePad()
 
     m_touch.Initialize();
     m_touch.SetTouchRing(m_touchring);
+}
+
+void Hid::InitializeAccelerometer()
+{
+    m_accel.Initialize();
+    m_accel.SetAccelerometerRing(m_accelring);
 }
 
 static inline bool isServiceUsable(const char *name)
@@ -277,23 +285,24 @@ static Result IRRST_Initialize_(Handle *irrsthandle, u32 unk1, u8 unk2)
 
 	return cmdbuf[1];
 }
+//u8 irneeded = 0;
 static void irPatch(void *argv)
-
-
 {
     Hid *hid = (Hid*)argv;
-    while(!isServiceUsable("ir:u")) svcSleepThread(1e+9); // Wait For service
+   // while(!isServiceUsable("ir:u")) svcSleepThread(1e+9); // Wait For service
+    /*
     srvSetBlockingPolicy(true);
-    Handle irhandle;
-    Result ret = srvGetServiceHandle(&irhandle, "ir:rst");
-    if(ret == 0) {
-        ret = IRRST_Initialize_(&irhandle, 10, 1);
-        if(ret) *(u32*)0xFABCDEFA = ret;
+    Result ret = 1; //= _irrstInit();
+    if(ret == 0)
+    {
+        irneeded = 1;
     }
-    else if(ret != 0xD0401834)
-        *(u32*)0xFABCDEFB = ret;
-    srvSetBlockingPolicy(false);
-    OperateOnProcessByName("ir", irpatch_cb, hid->GetRemapperObject(), hid->GetPad()->GetLatestRawKeys());
+    else
+    {
+        */
+   // OperateOnProcessByName("ir", irpatch_cb, hid->GetRemapperObject(), hid->GetPad()->GetLatestRawKeys());
+    //}
+    //srvSetBlockingPolicy(false);
 }
 
 static void SamplingFunction(void *argv)
@@ -302,19 +311,35 @@ static void SamplingFunction(void *argv)
     Result ret = 0;
     u32 touchscreendata, circlepaddata;
     Handle *padtimer = hid->GetPad()->GetTimer();
+    Handle *accelintrevent = hid->GetAccelerometer()->GetIntrEvent();
     LightLock *lock = hid->GetSleepLock();
     irPatch(argv);
+    int32_t out;
     while(!*hid->ExitThread())
     {
+        Handle handles[] = {*padtimer, *accelintrevent};
         LightLock_Lock(lock);
-        ret = svcWaitSynchronization(*padtimer, U64_MAX);
-        if(ret > 0) svcBreak(USERBREAK_ASSERT);
-        ret = CDCHID_GetData(&touchscreendata, &circlepaddata);
-        if(ret == 0)
-        {
-            hid->GetPad()->Sampling(circlepaddata, hid->GetRemapperObject());
-            hid->GetTouch()->Sampling(touchscreendata, hid->GetRemapperObject());
+        ret = svcWaitSynchronizationN(&out, handles, 2, false, -1LL);
+        switch(out){
+            case 0:
+            {
+                ret = CDCHID_GetData(&touchscreendata, &circlepaddata);
+                if(ret == 0)
+                {
+                    hid->GetPad()->Sampling(circlepaddata, hid->GetRemapperObject());
+                    hid->GetTouch()->Sampling(touchscreendata, hid->GetRemapperObject());
+                }
+                break;
+            }
+
+            case 1:
+            {
+                hid->GetAccelerometer()->Sampling();
+                break;
+            }
         }
+        if(ret > 0) svcBreak(USERBREAK_ASSERT);
+        
         LightLock_Unlock(lock);
     }
 }
@@ -325,8 +350,12 @@ void Hid::StartThreadsForSampling()
     {
         m_padring->Reset();
         m_touchring->Reset();
+        m_accelring->Reset();
         m_pad.SetTimer();
+        m_accel.EnableOrDisableInterrupt();
         MyThread_Create(&m_samplingthread, SamplingFunction, this, hidthreadstack, 0x1000, 0x15, -2);
+        m_accel.EnableOrDisableInterrupt(0); // disable accelerometer interrupt
+        m_accel.SetAccelerometerStatus(1); // enable accelerometer
         m_samplingthreadstarted = true;
     }
 }
@@ -343,6 +372,7 @@ void Hid::ExitingSleepMode()
     LightLock_Unlock(&m_sleeplock); // Unlock lock and then reset timer
     m_padring->Reset();
     m_touchring->Reset();
+    m_accelring->Reset();
     m_pad.SetTimer();
     PTMSYSM_NotifySleepPreparationComplete(0);
 }

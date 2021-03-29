@@ -2,6 +2,8 @@
 #include <3ds.h>
 #include "Touch.hpp"
 #include "Pad.hpp"
+#include "Accelerometer.hpp"
+
 extern "C"
 {
     #include "mythread.h"
@@ -14,11 +16,13 @@ class Hid
         void CreateRingsOnSharedmemoryBlock();
         void StartThreadsForSampling();
         void InitializePad();
+        void InitializeAccelerometer();
         void EnteringSleepMode();
         void ExitingSleepMode();
-        void IsShellOpened(bool opened) {m_shellisopen = opened; };
-        Pad *GetPad() {return &m_pad; };
-        Touch *GetTouch() {return &m_touch; };
+        void IsShellOpened(bool opened) { m_shellisopen = opened; };
+        Pad *GetPad() { return &m_pad; };
+        Touch *GetTouch() { return &m_touch; };
+        Accelerometer *GetAccelerometer() { return &m_accel; };
         Handle *GetSharedMemHandle() { return &m_sharedmemhandle; };
         uint8_t *ExitThread() { return &m_exitthread; };
         LightLock *GetSleepLock() { return &m_sleeplock; };
@@ -30,8 +34,10 @@ class Hid
         void *m_addr = nullptr;
         PadRing *m_padring = nullptr;
         TouchRing *m_touchring = nullptr;
+        AccelerometerRing *m_accelring = nullptr;
         Pad m_pad;
         Touch m_touch;
+        Accelerometer m_accel;
         bool m_shellisopen = true;
         MyThread m_samplingthread;
         bool m_samplingthreadstarted = false;

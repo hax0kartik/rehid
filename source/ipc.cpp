@@ -80,7 +80,7 @@ void IPC::HandleCommands(Hid *hid)
             cmdbuf[3] = *hid->GetSharedMemHandle();
             cmdbuf[4] = *hid->GetPad()->GetEvent();
             cmdbuf[5] = *hid->GetTouch()->GetEvent();
-            cmdbuf[6] = hid->dummyhandles[1];
+            cmdbuf[6] = *hid->GetAccelerometer()->GetEvent();
             cmdbuf[7] = hid->dummyhandles[2];
             cmdbuf[8] = hid->dummyhandles[3];
             break;
