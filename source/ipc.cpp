@@ -128,15 +128,17 @@ void IPC::HandleCommands(Hid *hid)
             break;
         }
 
-        case 0x11:
+        case 0x11: // EnableAccelerometer
         {
+            hid->GetAccelerometer()->EnableAndIncreementRef();
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;
         }
 
-        case 0x12:
+        case 0x12: // DisableAccelerometer
         {
+            hid->GetAccelerometer()->DisableAndDecreementRef();
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;

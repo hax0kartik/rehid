@@ -134,6 +134,7 @@ int main()
     hid.CreateAndMapMemoryBlock();
     hid.CreateRingsOnSharedmemoryBlock();
     hid.InitializePad();
+    hid.InitializeAccelerometer();
     hid.StartThreadsForSampling();
 
     ONERRSVCBREAK(srvEnableNotification(&handles[0]));
