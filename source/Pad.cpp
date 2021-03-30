@@ -1,6 +1,6 @@
 #include "Pad.hpp"
 #include "printf.h"
-
+#include "ir.hpp"
 extern void _putchar(char character);
 /*
 {
@@ -25,12 +25,17 @@ void Pad::SetTimer()
         svcBreak(USERBREAK_ASSERT);
 }
 
+extern u8 irneeded;
 void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad, Remapper *remapper)
 {
     volatile uint32_t latest = (vu32)(IOHIDPAD) ^ 0xFFF; 
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
     latest = m_circlepad.ConvertToHidButtons(circlepad, latest);
+    if(irneeded){
+        irrstScanInput_();
+        m_rawkeys = irrstKeysHeld_();
+    }
     latest = latest | m_rawkeys;
     latest = remapper->Remap(latest);
     entry->pressedpadstate = (latest ^ m_latestkeys) & ~m_latestkeys;

@@ -3,7 +3,7 @@
 #include "hid.hpp"
 #include "PadRing.hpp"
 #include <cstring>
-//#include "ir.hpp"
+#include "ir.hpp"
 extern "C"
 {
     #include "csvc.h"
@@ -273,36 +273,22 @@ Result irpatch_cb(Handle phandle, u32 textsz, u32 rosz, u32 rwsz, Remapper *rema
     return (Result)0;
 }
 
-static Result IRRST_Initialize_(Handle *irrsthandle, u32 unk1, u8 unk2)
-{
-	u32* cmdbuf=getThreadCommandBuffer();
-	cmdbuf[0]=IPC_MakeHeader(0x2,2,0); // 0x20080
-	cmdbuf[1]=unk1;
-	cmdbuf[2]=unk2;
-
-	Result ret=0;
-	if(R_FAILED(ret=svcSendSyncRequest(*irrsthandle)))return ret;
-
-	return cmdbuf[1];
-}
-//u8 irneeded = 0;
+u8 irneeded = 0;
 static void irPatch(void *argv)
 {
     Hid *hid = (Hid*)argv;
-   // while(!isServiceUsable("ir:u")) svcSleepThread(1e+9); // Wait For service
-    /*
+    while(!isServiceUsable("ir:u")) svcSleepThread(1e+9); // Wait For service
     srvSetBlockingPolicy(true);
-    Result ret = 1; //= _irrstInit();
+    Result ret = irrstInit_();
     if(ret == 0)
     {
         irneeded = 1;
     }
     else
     {
-        */
-   // OperateOnProcessByName("ir", irpatch_cb, hid->GetRemapperObject(), hid->GetPad()->GetLatestRawKeys());
-    //}
-    //srvSetBlockingPolicy(false);
+        OperateOnProcessByName("ir", irpatch_cb, hid->GetRemapperObject(), hid->GetPad()->GetLatestRawKeys());
+    }
+    srvSetBlockingPolicy(false);
 }
 
 static void SamplingFunction(void *argv)

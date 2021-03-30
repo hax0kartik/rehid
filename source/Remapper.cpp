@@ -92,7 +92,11 @@ static uint32_t keystrtokeyval(char *str)
         { "CRIGHT", KEY_CPAD_RIGHT},
         { "CLEFT",  KEY_CPAD_LEFT},
         { "CDOWN",  KEY_CPAD_DOWN},
-        { "CUP",    KEY_CPAD_UP}
+        { "CUP",    KEY_CPAD_UP},
+        { "CSRIGHT", KEY_CSTICK_RIGHT},
+        { "CSLEFT",  KEY_CSTICK_LEFT},
+        { "CSDOWN",  KEY_CSTICK_DOWN},
+        { "CSUP",    KEY_CSTICK_UP}
     };
     char *key; char *rest = nullptr;
     key = strtok_r(str, "+", &rest);
