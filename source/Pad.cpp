@@ -26,12 +26,12 @@ void Pad::SetTimer()
 }
 
 extern u8 irneeded;
-void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad, Remapper *remapper)
+void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry *circlepad, Remapper *remapper)
 {
     volatile uint32_t latest = (vu32)(IOHIDPAD) ^ 0xFFF; 
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
-    latest = m_circlepad.ConvertToHidButtons(circlepad, latest);
+    latest = m_circlepad.ConvertToHidButtons(circlepad, latest, remapper); // if need be this also sets the circlepad entry to 0
     if(irneeded){
         irrstScanInput_();
         m_rawkeys = irrstKeysHeld_();
@@ -61,7 +61,7 @@ void Pad::Sampling(u32 rcpr, Remapper *remapper)
         *(float*)0x1FF81080 = sliderval;
     }
     ++m_counter;
-    ReadFromIO(&finalentry, &latest, finalcirclepad, remapper);
+    ReadFromIO(&finalentry, &latest, &finalcirclepad, remapper);
     m_ring->SetCurrPadState(latest, rawcirclepad);
     m_ring->Set3dSliderVal(sliderval);
     m_ring->WriteToRing(&finalentry, &finalcirclepad);

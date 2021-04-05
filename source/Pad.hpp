@@ -14,7 +14,7 @@ class Pad
         void SetTimer();
         Handle *GetTimer() { return &m_timer; };
         void Sampling(u32 rcpr, Remapper *remapper);
-        void ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry circlepad, Remapper *remapper);
+        void ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry *circlepad, Remapper *remapper);
         Handle *GetEvent() {return &m_event; };
         uint32_t *GetLatestRawKeys() { return &m_rawkeys; }
     private:

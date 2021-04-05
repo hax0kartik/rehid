@@ -225,6 +225,16 @@ void Remapper::ParseConfigFile()
                 m_remaptouchobjects[i].key = keystrtokeyval(arr->u.array.values[i]->u.object.values[1].value->u.string.ptr);
             }
         }
+        else if(strcasecmp(value->u.object.values[index].name, "cpadtodpad") == 0)
+        {
+            json_value *cpadtodpad = value->u.object.values[index].value; // CPAD-TO-DPAD
+            m_docpadtodpad = cpadtodpad->u.boolean & 0xFF;
+        }
+        else if(strcasecmp(value->u.object.values[index].name, "dpadtocpad") == 0)
+        {
+            json_value *dpadtocpad = value->u.object.values[index].value; // DPAD-TO-CPAD
+            m_dodpadtocpad = dpadtocpad->u.boolean & 0xFF;
+        }
     }
     json_value_free(value);
     free(m_filedata);

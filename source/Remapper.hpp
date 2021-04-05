@@ -31,6 +31,8 @@ class Remapper
         TouchObject m_remaptouchobjects[10]; // Support upto 10 key > touch binds
         uint8_t m_keyentries;
         uint8_t m_touchentries;
+        uint8_t m_docpadtodpad = 0;
+        uint8_t m_dodpadtocpad = 0;
         int16_t m_touchoveridex = 0;
         int16_t m_touchoveridey = 0;
 

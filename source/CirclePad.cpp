@@ -83,26 +83,64 @@ void CirclePad::AdjustValues(int16_t *adjustedx, int16_t *adjustedy, int rawx, i
   }
 }
 
-uint32_t CirclePad::ConvertToHidButtons(CirclePadEntry circlepad, uint32_t buttons)
+uint32_t CirclePad::ConvertToHidButtons(CirclePadEntry *circlepad, uint32_t buttons, Remapper *remapper)
 {
     int32_t tanybyx = 0, tanxbyy = 0;
     CirclePadEntry adjusted;
     buttons = buttons & 0xFFFFFFF;
-    AdjustValues(&adjusted.x, &adjusted.y, circlepad.x, circlepad.y, 40, 145);
+    u32 left = KEY_CPAD_LEFT, right = KEY_CPAD_RIGHT, up = KEY_CPAD_UP, down = KEY_CPAD_DOWN;
+    if(remapper->m_docpadtodpad)
+    {
+        left = KEY_DLEFT;
+        right = KEY_DRIGHT;
+        up = KEY_DUP;
+        down = KEY_DDOWN;
+    }
+    AdjustValues(&adjusted.x, &adjusted.y, circlepad->x, circlepad->y, 40, 145);
     if(adjusted.x)
         tanybyx = (adjusted.y << 8) / adjusted.x;
     if(adjusted.y)
         tanxbyy = (adjusted.x << 8) / adjusted.y;
     
     if(0 < adjusted.x && -81 <= tanybyx && 81 >= tanybyx)
-        buttons |= KEY_CPAD_RIGHT;
+        buttons |= right;
     else if(0 > adjusted.x && -81 <= tanybyx && 81 >= tanybyx)
-        buttons |= KEY_CPAD_LEFT;
-    
+        buttons |= left;
     if(0 < adjusted.y && -81 <= tanxbyy && 81 >= tanxbyy)
-        buttons |= KEY_CPAD_UP;
+        buttons |= up;
     else if(0 > adjusted.y && -81 <= tanxbyy && 81 >= tanxbyy)
-        buttons |= KEY_CPAD_DOWN;
+        buttons |= down;
+
+    if(remapper->m_docpadtodpad)
+    {
+        circlepad->x = 0;
+        circlepad->y = 0;
+    }
     
+    if(remapper->m_dodpadtocpad)
+    {
+        if(buttons & KEY_DLEFT)
+        {
+            circlepad->x = -190;
+            circlepad->y = 0;
+        }
+
+        else if(buttons & KEY_DRIGHT)
+        {
+            circlepad->x = 190;
+            circlepad->y = 0;
+        }
+
+        if(buttons & KEY_DUP)
+        {
+            circlepad->y = 190;
+        }
+
+        else if(buttons & KEY_DDOWN)
+        {
+            circlepad->y = -190;
+        }
+    }
+
     return buttons;
 }

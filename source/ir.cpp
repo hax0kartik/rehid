@@ -1,4 +1,5 @@
 #include <3ds.h>
+#include <cstring>
 #include "ir.hpp"
 
 Handle irrstHandle_;
@@ -8,6 +9,7 @@ Handle irrstEvent_;
 vu32* irrstSharedMem_;
 
 static u32 kHeld;
+static circlePosition csPos;
 static int irrstRefCount;
 
 Result IRRST_GetHandles_(Handle* outMemHandle, Handle* outEventHandle)
@@ -138,12 +140,14 @@ void irrstScanInput_(void)
 
 	u32 Id=0;
 	kHeld = 0;
+	memset(&csPos, 0, sizeof(circlePosition));
 
 	Id = irrstSharedMem_[4]; //PAD / circle-pad
 	if(Id>7)Id=7;
 	if(irrstCheckSectionUpdateTime_(irrstSharedMem_, Id)==0)
 	{
 		kHeld = irrstSharedMem_[6 + Id*4];
+		csPos = *(circlePosition*)&irrstSharedMem_[6 + Id*4 + 3];
 	}
 }
 
@@ -151,4 +155,9 @@ u32 irrstKeysHeld_(void)
 {
 	if(irrstRefCount>0)return kHeld;
 	return 0;
+}
+
+void irrstCstickRead_(circlePosition* pos)
+{
+	if (pos) *pos = csPos;
 }
