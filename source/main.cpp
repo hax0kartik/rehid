@@ -2,6 +2,7 @@
 #include "hid.hpp"
 #include "ipc.hpp"
 #include "mcuhid.hpp"
+#include "ir.hpp"
 extern "C" {
     #include "csvc.h"
     #include "services.h"
@@ -11,6 +12,7 @@ extern "C" {
 #define MAX_SESSIONS 10
 #define SERVICE_ENDPOINTS 3
 
+extern u8 irneeded;
 static Result HandleNotifications(Hid *hid, int *exit)
 {
     uint32_t notid = 0;
@@ -39,11 +41,24 @@ static Result HandleNotifications(Hid *hid, int *exit)
 
         case 0x10C: // Regular Application started
         {
-           // hid->GetPad()->RemapGenFileLoc();
             break;
         }
 
-        case 0x213: // Sleep Opened
+        case 0x204: // Home button pressed
+        {
+            if(irneeded == 1) 
+            {
+                irrstExit_();
+                irneeded = -1;
+                svcSleepThread(0.5e+9);
+                if(R_FAILED(ret = irrstInit_(1))) // steal handle
+                    *(u32*)0xff0fdaad = ret;
+                irneeded = 1;
+            }   
+            break;
+        }
+
+        case 0x213: // Shell Opened
         {
             hid->IsShellOpened(true);
             break;
@@ -54,6 +69,13 @@ static Result HandleNotifications(Hid *hid, int *exit)
             hid->IsShellOpened(false);
             break;
         }
+
+        case 0x110: // Application terminated
+        {
+            hid->GetRemapperObject()->Reset();
+            break;
+        }
+
     }
     return 0;
 }
@@ -91,6 +113,7 @@ extern "C"
     // this is called after main exits
     void __appExit() {
         ptmSysmExit();
+        mcuHidExit();
         srvSysExit();
     }
 
@@ -141,6 +164,8 @@ int main()
     ONERRSVCBREAK(srvSubscribe(0x104));
     ONERRSVCBREAK(srvSubscribe(0x105));
     ONERRSVCBREAK(srvSubscribe(0x10C)); // This is not subscribed to by official hid
+    ONERRSVCBREAK(srvSubscribe(0x110)); // application termination, not subscribed by official hid
+    ONERRSVCBREAK(srvSubscribe(0x204)); // Home Button pressed, not subscribed by official hid
     ONERRSVCBREAK(srvSubscribe(0x213));
     ONERRSVCBREAK(srvSubscribe(0x214));
 

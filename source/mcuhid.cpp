@@ -9,6 +9,11 @@ Result mcuHidInit()
     return ret;
 }
 
+void mcuHidExit()
+{
+    svcCloseHandle(mcuHidHandle);
+}
+
 Result mcuHidEnableAccelerometer(u8 enable)
 {
     u32 *cmdbuf = getThreadCommandBuffer();

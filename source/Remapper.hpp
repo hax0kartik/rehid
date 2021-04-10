@@ -27,6 +27,13 @@ class Remapper
         uint32_t Remap(uint32_t hidtstate);
         Result ReadConfigFile();
         void ParseConfigFile();
+        void Reset()
+        {
+            m_keyentries = 0;
+            m_touchentries = 0;
+            m_dodpadtocpad = 0;
+            m_docpadtodpad = 0;
+        }
         KeyObject m_remapkeyobjects[10]; // Support upto 10 remapable key combos
         TouchObject m_remaptouchobjects[10]; // Support upto 10 key > touch binds
         uint8_t m_keyentries;

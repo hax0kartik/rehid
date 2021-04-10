@@ -1,6 +1,10 @@
 #include <3ds.h>
 #include <cstring>
 #include "ir.hpp"
+extern "C"
+{
+	#include "csvc.h"
+}
 
 Handle irrstHandle_;
 Handle irrstMemHandle_;
@@ -50,15 +54,24 @@ Result IRRST_Shutdown_(void)
 	return cmdbuf[1];
 }
 
-Result irrstInit_(void)
+Result irrstInit_(uint8_t steal)
 {
 	if (AtomicPostIncrement(&irrstRefCount)) return 0;
 
 	Result ret=0;
 
 	// Request service.
-	if(R_FAILED(ret=srvGetServiceHandle(&irrstHandle_, "ir:rst"))) goto cleanup0;
-
+	if(steal)
+	{
+		if(R_FAILED(ret = svcControlService(SERVICEOP_STEAL_CLIENT_SESSION, (Handle *)&irrstHandle_, "ir:rst")))
+			*(u32*)0xf00fdaad = ret;
+	}
+	
+	else
+	{ 
+		if(R_FAILED(ret=srvGetServiceHandle(&irrstHandle_, "ir:rst"))) 
+			goto cleanup0;
+	}
 	// Get sharedmem handle.
 	if(R_FAILED(ret=IRRST_GetHandles_(&irrstMemHandle_, &irrstEvent_))) goto cleanup1;
 
