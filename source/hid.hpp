@@ -28,6 +28,7 @@ class Hid
         LightLock *GetSleepLock() { return &m_sleeplock; };
         Remapper *GetRemapperObject() { return &m_remapper; };
         void RemapGenFileLoc();
+        void CheckIfIRPatchExists();
         Handle dummyhandles[4] = {0};
     private:
         Handle m_sharedmemhandle;

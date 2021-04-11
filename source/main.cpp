@@ -48,12 +48,6 @@ static Result HandleNotifications(Hid *hid, int *exit)
         {
             if(irneeded == 1) 
             {
-                irrstExit_();
-                irneeded = -1;
-                svcSleepThread(0.5e+9);
-                if(R_FAILED(ret = irrstInit_(1))) // steal handle
-                    *(u32*)0xff0fdaad = ret;
-                irneeded = 1;
             }   
             break;
         }
@@ -153,7 +147,7 @@ int main()
         ONERRSVCBREAK(ret);
     }
     
-    //hid.TakeOverIRRSTIfRequired();
+    hid.CheckIfIRPatchExists();
     hid.CreateAndMapMemoryBlock();
     hid.CreateRingsOnSharedmemoryBlock();
     hid.InitializePad();

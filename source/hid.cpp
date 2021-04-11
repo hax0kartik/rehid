@@ -371,3 +371,25 @@ void Hid::RemapGenFileLoc()
         else if(ret) *(u32*)ret = 0xF00FBABE;
     m_remapper.ParseConfigFile();
 }
+
+void Hid::CheckIfIRPatchExists()
+{
+    Handle fshandle;
+    u8 ipsdata[] = {
+        0x50, 0x41, 0x54, 0x43, 0x48, 0x1, 0x10, 0x74, 0x0, 0x1, 0x33, 0x45, 0x4f, 0x46
+    };
+    Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/luma/titles/0004013000003302/code.ips"), FS_OPEN_READ, 0);
+    if(ret) // Does not exist
+    {
+        u64 archivesd;
+        FSUSER_OpenArchive(&archivesd, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
+        ret = FSUSER_CreateDirectory(archivesd, fsMakePath(PATH_ASCII, "/luma/titles/0004013000003302/"), FS_ATTRIBUTE_DIRECTORY);
+        if(R_FAILED(ret)) *(u32*)0xF009F008 = ret; // Shouldn't have happened
+        ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/luma/titles/0004013000003302/code.ips"), FS_OPEN_WRITE | FS_OPEN_CREATE, 0);
+        if(R_FAILED(ret)) *(u32*)0xF009F009 = ret; // Shouldn't have happened
+        ret = FSFILE_Write(fshandle, nullptr, 0, ipsdata, sizeof(ipsdata)/sizeof(uint8_t), 0);
+        if(R_FAILED(ret)) *(u32*)0xf009f010 = ret; // Neither this should happen
+        FSFILE_Close(fshandle);
+        PTMSYSM_RebootAsync(2e+9);
+    }
+}
