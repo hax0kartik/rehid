@@ -1,11 +1,13 @@
 #include <3ds.h>
-#include <cstring>
-#include "ir.hpp"
-extern "C"
-{
-	#include "csvc.h"
-}
-
+#include "irrst.hpp"
+#include "printf.h"
+Handle iruHandle;
+int iruRefCount;
+u32 latestkeys = 0;
+u32 *latestKeysPA;
+u32 *statePA;
+u16 statecounter;
+#define PA_PTR(addr)            (void *)((u32)(addr) | 1 << 31)
 Handle irrstHandle_;
 Handle irrstMemHandle_;
 Handle irrstEvent_;
@@ -13,8 +15,8 @@ Handle irrstEvent_;
 vu32* irrstSharedMem_;
 
 static u32 kHeld;
-static circlePosition csPos;
-static int irrstRefCount;
+int irrstRefCount;
+
 
 Result IRRST_GetHandles_(Handle* outMemHandle, Handle* outEventHandle)
 {
@@ -61,17 +63,9 @@ Result irrstInit_(uint8_t steal)
 	Result ret=0;
 
 	// Request service.
-	if(steal)
-	{
-		if(R_FAILED(ret = svcControlService(SERVICEOP_STEAL_CLIENT_SESSION, (Handle *)&irrstHandle_, "ir:rst")))
-			*(u32*)0xf00fdaad = ret;
-	}
-	
-	else
-	{ 
-		if(R_FAILED(ret=srvGetServiceHandle(&irrstHandle_, "ir:rst"))) 
+	if(R_FAILED(ret=srvGetServiceHandle(&irrstHandle_, "ir:rst"))) 
 			goto cleanup0;
-	}
+
 	// Get sharedmem handle.
 	if(R_FAILED(ret=IRRST_GetHandles_(&irrstMemHandle_, &irrstEvent_))) goto cleanup1;
 
@@ -114,7 +108,7 @@ void irrstExit_(void)
 	svcCloseHandle(irrstEvent_);
 	// Unmap ir:rst sharedmem and close handles.
 	svcUnmapMemoryBlock(irrstMemHandle_, (u32)irrstSharedMem_);
-	if(envGetHandle("ir:rst") == 0) IRRST_Shutdown();
+	if(envGetHandle("ir:rst") == 0) IRRST_Shutdown_();
 	svcCloseHandle(irrstMemHandle_);
 	svcCloseHandle(irrstHandle_);
 
@@ -153,24 +147,134 @@ void irrstScanInput_(void)
 
 	u32 Id=0;
 	kHeld = 0;
-	memset(&csPos, 0, sizeof(circlePosition));
-
+	if(irrstSharedMem_ != NULL) return;
 	Id = irrstSharedMem_[4]; //PAD / circle-pad
-	if(Id>7)Id=7;
+	if(Id>7)Id=0;
 	if(irrstCheckSectionUpdateTime_(irrstSharedMem_, Id)==0)
 	{
 		kHeld = irrstSharedMem_[6 + Id*4];
-		csPos = *(circlePosition*)&irrstSharedMem_[6 + Id*4 + 3];
 	}
 }
 
 u32 irrstKeysHeld_(void)
 {
 	if(irrstRefCount>0)return kHeld;
-	return 0;
+	return -1;
 }
 
-void irrstCstickRead_(circlePosition* pos)
+
+Result IRU_Initialize_(void)
 {
-	if (pos) *pos = csPos;
+	Result ret = 0;
+	u32 *cmdbuf = getThreadCommandBuffer();
+
+	cmdbuf[0] = IPC_MakeHeader(0x1,0,0); // 0x10000
+
+	if(R_FAILED(ret = svcSendSyncRequest(iruHandle)))return ret;
+	ret = (Result)cmdbuf[1];
+
+	return ret;
+}
+
+u32 IRU_GetLatestKeysPA_()
+{
+	Result ret = 0;
+	u32 *cmdbuf = getThreadCommandBuffer();
+
+	cmdbuf[0] = IPC_MakeHeader(0x7,0,0); // 0x70000
+
+	if(R_FAILED(ret = svcSendSyncRequest(iruHandle)))return ret;
+	return cmdbuf[1];
+}
+
+u32 IRU_GetStatePA_()
+{
+	Result ret = 0;
+	u32 *cmdbuf = getThreadCommandBuffer();
+
+	cmdbuf[0] = IPC_MakeHeader(0x8,0,0); // 0x80000
+
+	if(R_FAILED(ret = svcSendSyncRequest(iruHandle)))return ret;
+	return cmdbuf[1];
+}
+
+Result IRU_Shutdown_(void)
+{
+	Result ret = 0;
+	u32 *cmdbuf = getThreadCommandBuffer();
+
+	cmdbuf[0] = IPC_MakeHeader(0x2,0,0); // 0x20000
+
+	if(R_FAILED(ret = svcSendSyncRequest(iruHandle)))return ret;
+	ret = (Result)cmdbuf[1];
+
+	return ret;
+}
+
+Result iruInit_(unsigned char c)
+{
+	Result ret = 0;
+	u32 keysdirectPA;
+	u32 statedirectPA;
+	if(AtomicPostIncrement(&iruRefCount)) return 0;
+
+	ret = srvGetServiceHandle(&iruHandle, "ir:u");
+	if(R_FAILED(ret))goto cleanup0;
+
+	ret = IRU_Initialize_();
+	if(R_FAILED(ret))goto cleanup1;
+
+	keysdirectPA = IRU_GetLatestKeysPA_();
+	statedirectPA = IRU_GetStatePA_();
+	latestKeysPA = (u32*)PA_PTR(keysdirectPA);
+	statePA = (u32*)PA_PTR(statedirectPA);
+
+	IRU_Shutdown_();
+
+cleanup1:
+	svcCloseHandle(iruHandle);
+cleanup0:
+	AtomicDecrement(&iruRefCount);
+	return ret;
+}
+
+void iruExit_(void)
+{
+	if(AtomicDecrement(&iruRefCount)) return;
+	IRU_Shutdown_();
+	svcCloseHandle(iruHandle);
+	iruHandle = 0;
+}
+
+void iruScanInput_()
+{	
+	if(*statePA == 1 || *statePA == 2)
+	{
+		statecounter = 0; 
+		latestkeys = 0;
+		latestkeys = (*latestKeysPA) & ~KEY_CSTICK_DOWN;
+		*latestKeysPA  = 0;
+	}
+	else
+		statecounter++;
+	
+	if(statecounter > 8000){
+		srvSetBlockingPolicy(false);
+		irrstInit_(0);
+		srvSetBlockingPolicy(true);
+		irrstScanInput_();
+		statecounter = 0;
+	}
+}
+
+char data[100];
+u32 iruKeysHeld_()
+{
+	u32 keys = irrstKeysHeld_();
+	sprintf_(data, "keys %08X latestkeys %08X irrstrefcount %d\n", keys, latestkeys, irrstRefCount);
+	svcOutputDebugString(data, 100);
+	if(keys != -1)
+		return keys & ~KEY_CSTICK_DOWN;
+	else
+		return latestkeys;
 }

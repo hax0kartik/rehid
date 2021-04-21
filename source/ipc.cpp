@@ -146,6 +146,7 @@ void IPC::HandleCommands(Hid *hid)
 
         case 0x13:
         {
+            svcSignalEvent(hid->dummyhandles[2]);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;
@@ -153,6 +154,7 @@ void IPC::HandleCommands(Hid *hid)
 
         case 0x14:
         {
+            svcClearEvent(hid->dummyhandles[2]);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;
@@ -178,6 +180,13 @@ void IPC::HandleCommands(Hid *hid)
             cmdbuf[0] = 0x170080;
             cmdbuf[1] = 0;
             cmdbuf[2] = 0;
+            break;
+        }
+
+        case 0x18:
+        {
+            cmdbuf[0] = 0x180040;
+            cmdbuf[1] = 0;
             break;
         }
     }

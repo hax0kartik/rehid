@@ -1,6 +1,6 @@
 #include "Pad.hpp"
 #include "printf.h"
-#include "ir.hpp"
+#include "irrst.hpp"
 extern void _putchar(char character);
 /*
 {
@@ -33,8 +33,8 @@ void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry *circlepad, 
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
     latest = m_circlepad.ConvertToHidButtons(circlepad, latest, remapper); // if need be this also sets the circlepad entry to 0
     if(irneeded == 1){
-        irrstScanInput_();
-        m_rawkeys = irrstKeysHeld_();
+        iruScanInput_();
+        m_rawkeys = iruKeysHeld_();
     }
     latest = latest | m_rawkeys;
     latest = remapper->Remap(latest);

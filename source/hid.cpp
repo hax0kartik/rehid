@@ -3,7 +3,8 @@
 #include "hid.hpp"
 #include "PadRing.hpp"
 #include <cstring>
-#include "ir.hpp"
+#include "irrst.hpp"
+#include "code_ips.h"
 extern "C"
 {
     #include "csvc.h"
@@ -68,7 +69,7 @@ void Hid::CreateAndMapMemoryBlock()
     }
     else svcBreak(USERBREAK_ASSERT);
     for(int i = 0; i < 4; i++)
-        svcCreateEvent(&dummyhandles[i], RESET_ONESHOT);
+        svcCreateEvent(&dummyhandles[i], RESET_STICKY);
     LightLock_Init(&m_sleeplock);
 }
 
@@ -77,6 +78,7 @@ void Hid::CreateRingsOnSharedmemoryBlock()
     m_padring = new(m_addr)PadRing;
     m_touchring = new((void*)((u32)(m_addr) + 0xA8))TouchRing;
     m_accelring = new((void*)((u32)(m_addr) + 0x108))AccelerometerRing;
+    m_gyroring = new((void*)((u32)(m_addr) + 0x158))GyroscopeRing;
 }
 
 void Hid::InitializePad()
@@ -94,6 +96,12 @@ void Hid::InitializeAccelerometer()
 {
     m_accel.Initialize();
     m_accel.SetAccelerometerRing(m_accelring);
+}
+
+void Hid::InitializeGyroscope()
+{
+    m_gyro.Initialize();
+    m_gyro.SetGyroscopeRing(m_gyroring);
 }
 
 static inline bool isServiceUsable(const char *name)
@@ -279,15 +287,19 @@ static void irPatch(void *argv)
     Hid *hid = (Hid*)argv;
     while(!isServiceUsable("ir:u")) svcSleepThread(1e+9); // Wait For service
     srvSetBlockingPolicy(true);
-    Result ret = irrstInit_();
+
+    Result ret = iruInit_();
     if(ret == 0)
     {
         irneeded = 1;
     }
+    /*
     else
     {
-        OperateOnProcessByName("ir", irpatch_cb, hid->GetRemapperObject(), hid->GetPad()->GetLatestRawKeys());
+        *(u32*)0xF009F007 = 0x4567;
+       // OperateOnProcessByName("ir", irpatch_cb, hid->GetRemapperObject(), hid->GetPad()->GetLatestRawKeys());
     }
+    */
     srvSetBlockingPolicy(false);
 }
 
@@ -337,6 +349,7 @@ void Hid::StartThreadsForSampling()
         m_padring->Reset();
         m_touchring->Reset();
         m_accelring->Reset();
+        m_gyroring->Reset();
         m_pad.SetTimer();
         m_accel.EnableOrDisableInterrupt();
         MyThread_Create(&m_samplingthread, SamplingFunction, this, hidthreadstack, 0x1000, 0x15, -2);
@@ -349,6 +362,7 @@ void Hid::StartThreadsForSampling()
 void Hid::EnteringSleepMode()
 {
     LightLock_Lock(&m_sleeplock); // now that main thread accquired the lock, sampling thread will get stuck
+    svcClearEvent(dummyhandles[2]);
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
 
@@ -359,6 +373,7 @@ void Hid::ExitingSleepMode()
     m_padring->Reset();
     m_touchring->Reset();
     m_accelring->Reset();
+    m_gyroring->Reset();
     m_pad.SetTimer();
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
@@ -375,9 +390,6 @@ void Hid::RemapGenFileLoc()
 void Hid::CheckIfIRPatchExists()
 {
     Handle fshandle;
-    u8 ipsdata[] = {
-        0x50, 0x41, 0x54, 0x43, 0x48, 0x1, 0x10, 0x74, 0x0, 0x1, 0x33, 0x45, 0x4f, 0x46
-    };
     Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/luma/titles/0004013000003302/code.ips"), FS_OPEN_READ, 0);
     if(ret) // Does not exist
     {
@@ -387,7 +399,7 @@ void Hid::CheckIfIRPatchExists()
         if(R_FAILED(ret)) *(u32*)0xF009F008 = ret; // Shouldn't have happened
         ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/luma/titles/0004013000003302/code.ips"), FS_OPEN_WRITE | FS_OPEN_CREATE, 0);
         if(R_FAILED(ret)) *(u32*)0xF009F009 = ret; // Shouldn't have happened
-        ret = FSFILE_Write(fshandle, nullptr, 0, ipsdata, sizeof(ipsdata)/sizeof(uint8_t), 0);
+        ret = FSFILE_Write(fshandle, nullptr, 0, code_ips, code_ips_size, 0);
         if(R_FAILED(ret)) *(u32*)0xf009f010 = ret; // Neither this should happen
         FSFILE_Close(fshandle);
         PTMSYSM_RebootAsync(2e+9);
