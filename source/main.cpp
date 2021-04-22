@@ -100,8 +100,8 @@ extern "C"
         fsSysInit();
         Result ret = mcuHidInit();
         if(ret != 0) *(u32*)ret = 0xFFAA; 
-        gdbHioDevInit();
-        gdbHioDevRedirectStdStreams(false, true, false);
+       // gdbHioDevInit();
+       // gdbHioDevRedirectStdStreams(false, true, false);
         ptmSysmInit();
       //  logInit();
     }
@@ -141,7 +141,6 @@ int main()
     Hid hid;
     IPC ipc;
 
-    Result ret = 0;
     const char *srvnames[] = {"", "hid:SPVR", "hid:USER", "hid:QTM", "hid:NFC"};
 
     hid.CheckIfIRPatchExists();

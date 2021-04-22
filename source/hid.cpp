@@ -71,9 +71,8 @@ static inline bool isServiceUsable(const char *name)
 }
 
 u8 irneeded = 0;
-static void irPatch(void *argv)
+static void irInit()
 {
-    Hid *hid = (Hid*)argv;
     while(!isServiceUsable("ir:u")) svcSleepThread(1e+9); // Wait For service
     srvSetBlockingPolicy(true);
     Result ret = iruInit_();
@@ -90,7 +89,7 @@ static void SamplingFunction(void *argv)
     Handle *padtimer = hid->GetPad()->GetTimer();
     Handle *accelintrevent = hid->GetAccelerometer()->GetIntrEvent();
     LightLock *lock = hid->GetSleepLock();
-    irPatch(argv);
+    irInit();
     int32_t out;
     while(!*hid->ExitThread())
     {

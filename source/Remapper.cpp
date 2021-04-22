@@ -103,7 +103,7 @@ static uint32_t keystrtokeyval(char *str)
 
     while(key != NULL)
     {
-        for (int i = 0; i <  sizeof(keys) / sizeof(keys[0]); i++)
+        for (int i = 0; i <  (int)(sizeof(keys) / sizeof(keys[0])); i++)
         {
             if(strcasecmp(keys[i].key, key) == 0)
                 val |= keys[i].val;
@@ -132,7 +132,6 @@ void Remapper::GenerateFileLocation()
 {
     pmDbgInit();
     FS_ProgramInfo programinfo;
-    u64 tid;
     u32 launchflags;
     u32 pid;
     char stid[16+1];
@@ -191,6 +190,7 @@ Result Remapper::ReadConfigFile()
     if(ret) return ret;
     ret = FSFILE_Close(fshandle);
     if(ret) return ret;
+    return 0;
 }
 
 void Remapper::ParseConfigFile()
@@ -199,7 +199,7 @@ void Remapper::ParseConfigFile()
     if(value == nullptr) *(u32*)0xF00FFAAB = m_filedata[m_filedatasize - 2];
     m_touchentries = 0;
     m_keyentries = 0;
-    for(int index = 0; index < value->u.object.length; index++ )
+    for(int index = 0; index < (int)value->u.object.length; index++ )
     {
         if(strcasecmp(value->u.object.values[index].name, "keys") == 0)
         {
