@@ -37,5 +37,5 @@ class GyroscopeRing
         int32_t m_updatedindex = 0;
         uint32_t padding;
         GyroscopeEntry m_rawentry;
-        GyroscopeEntry m_entries[8];
+        GyroscopeEntry m_entries[32];
 };

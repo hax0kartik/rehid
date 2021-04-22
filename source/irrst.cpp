@@ -252,17 +252,16 @@ void iruScanInput_()
 	{
 		statecounter = 0; 
 		latestkeys = 0;
-		latestkeys = (*latestKeysPA) & ~KEY_CSTICK_DOWN;
+		u32 latestkeysPAdefer = *latestKeysPA;
+		kHeld = (latestkeysPAdefer ^ latestkeys) & ~latestkeys;
+		latestkeys = *latestKeysPA;
 		*latestKeysPA  = 0;
 	}
 	else
 		statecounter++;
 	
-	if(statecounter > 8000){
-		srvSetBlockingPolicy(false);
+	if(statecounter > 6000){
 		irrstInit_(0);
-		srvSetBlockingPolicy(true);
-		irrstScanInput_();
 		statecounter = 0;
 	}
 }
@@ -270,11 +269,7 @@ void iruScanInput_()
 char data[100];
 u32 iruKeysHeld_()
 {
-	u32 keys = irrstKeysHeld_();
-	sprintf_(data, "keys %08X latestkeys %08X irrstrefcount %d\n", keys, latestkeys, irrstRefCount);
+	sprintf_(data, "latestkeys %08X kHeld %08X\n", latestkeys, kHeld);
 	svcOutputDebugString(data, 100);
-	if(keys != -1)
-		return keys & ~KEY_CSTICK_DOWN;
-	else
-		return latestkeys;
+	return kHeld;
 }

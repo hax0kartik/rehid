@@ -13,8 +13,6 @@ extern "C" {
 #define OS_INVALID_HEADER        MAKERESULT(RL_PERMANENT, RS_WRONGARG, RM_OS, 47)
 #define OS_INVALID_IPC_PARAMATER MAKERESULT(RL_PERMANENT, RS_WRONGARG, RM_OS, 48)
 
-#define SERVICE_ENDPOINTS 3
-
 extern u8 irneeded;
 extern int irrstRefCount; 
 static Result HandleNotifications(Hid *hid, int *exit)
@@ -52,9 +50,6 @@ static Result HandleNotifications(Hid *hid, int *exit)
 
         case 0x204: // Home button pressed
         {
-            if(irneeded == 1) 
-            {
-            }   
             break;
         }
 
@@ -158,8 +153,8 @@ int main()
     hid.StartThreadsForSampling();
 
     const s32 SERVICECOUNT = 4;
-    const s32 INDEXMAX = SERVICECOUNT * 7 + 1; // 11 pre 8.0, 15 post 8.0
-    const s32 REMOTESESSIONINDEX = SERVICECOUNT + 1; // 6 pre 8.0, 8 post 8.0
+    const s32 INDEXMAX = SERVICECOUNT * 7 + 1;
+    const s32 REMOTESESSIONINDEX = SERVICECOUNT + 1;
 
     Handle sessionhandles[INDEXMAX];
 
@@ -241,18 +236,7 @@ int main()
             handlecount++;
 
         } else if (index >= REMOTESESSIONINDEX && index < INDEXMAX) {
-            
-            if(serviceindexes[index - REMOTESESSIONINDEX] == 4)
-            {
-                ;
-               //ipc.HandleNFCCommands(&hid);
-            }
-            else 
-            {
-                printf("hid command handler %d 0x%08lX index: %d\n", serviceindexes[index - REMOTESESSIONINDEX], getThreadCommandBuffer()[0], index);
-                ipc.HandleCommands(&hid);
-            }
-            //GPIO_IPCSession(GPIO_ServiceBitmasks[service_indexes[index - REMOTE_SESSION_INDEX]]);
+            ipc.HandleCommands(&hid);
             target = sessionhandles[index];
             targetindex = index;
 
