@@ -64,6 +64,12 @@ void Hid::InitializeGyroscope()
     m_gyro.SetGyroscopeRing(m_gyroring);
 }
 
+static inline bool isServiceUsable(const char *name)
+{
+    bool r;
+    return R_SUCCEEDED(srvIsServiceRegistered(&r, name)) && r;
+}
+
 u8 irneeded = 0;
 static void irPatch(void *argv)
 {
