@@ -6,7 +6,7 @@ int iruRefCount;
 u32 latestkeys = 0;
 u32 *latestKeysPA;
 u32 *statePA;
-u16 statecounter;
+u16 counter;
 #define PA_PTR(addr)            (void *)((u32)(addr) | 1 << 31)
 Handle irrstHandle_;
 Handle irrstMemHandle_;
@@ -246,30 +246,30 @@ void iruExit_(void)
 	iruHandle = 0;
 }
 
+u32 latestkeysPAdefer = 0;
 void iruScanInput_()
-{	
-	if(*statePA == 1 || *statePA == 2)
-	{
-		statecounter = 0; 
-		latestkeys = 0;
-		u32 latestkeysPAdefer = *latestKeysPA;
-		kHeld = (latestkeysPAdefer ^ latestkeys) & ~latestkeys;
-		latestkeys = *latestKeysPA;
-		*latestKeysPA  = 0;
+{
+	u8 state = *statePA;
+	if(state == 1 && irrstRefCount >= 1) { //iruser was initialized
+		irrstExit_();
 	}
-	else
-		statecounter++;
-	
-	if(statecounter > 6000){
+	if(state == 0 && irrstRefCount <= 0) {
 		irrstInit_(0);
-		statecounter = 0;
 	}
+
+	if(counter++ % 4 == 0) {
+		latestkeysPAdefer = *latestKeysPA;
+		*latestKeysPA  = 0;
+		return;
+	}
+	latestkeys = latestkeysPAdefer;
 }
 
 char data[100];
 u32 iruKeysHeld_()
 {
-	sprintf_(data, "latestkeys %08X kHeld %08X\n", latestkeys, kHeld);
+	u8 state = *statePA;
+	sprintf_(data, "latestkeys %08X kHeld(ir) %08X irrstrefcount %d inited:%d\n", latestkeys, kHeld, irrstRefCount, state);
 	svcOutputDebugString(data, 100);
-	return kHeld;
+	return latestkeys;
 }

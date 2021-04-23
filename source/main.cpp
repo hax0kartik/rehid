@@ -67,7 +67,6 @@ static Result HandleNotifications(Hid *hid, int *exit)
 
         case 0x110: // Application terminated
         {
-            if(irrstRefCount) irrstExit_();
             hid->GetRemapperObject()->Reset();
             break;
         }

@@ -73,6 +73,7 @@ void IPC::HandleCommands(Hid *hid)
         {
             //hid->TakeOverIRRSTIfRequired();
             //svcBreak(USERBREAK_ASSERT);
+            //irCheckAndActivateIfRequired(tid);
             hid->RemapGenFileLoc();
             cmdbuf[0] = 0xA0047;
             cmdbuf[1] = 0;

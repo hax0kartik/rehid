@@ -26,7 +26,7 @@ GetStatePA:
 .org 0x10B65C
 push {lr}
 mov r1, #0
-ldr r0, =0x114140 // state
+ldr r0, =0x1132C9 // initalized
 bl svcConvertVAToPA
 pop {pc}
 .pool
@@ -90,4 +90,10 @@ return:
 add sp, sp, #0x18
 pop {pc}
 .pool
+
+RemoveZLZR:
+.org 0x105884
+mov r1, #0
+stmea sp, {r1, r2}
+mov r3, #0
 .close
