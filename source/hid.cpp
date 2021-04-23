@@ -81,6 +81,7 @@ static void irInit()
     srvSetBlockingPolicy(false);
 }
 
+extern Handle irtimer;
 static void SamplingFunction(void *argv)
 {
     Hid *hid = (Hid*)argv;
@@ -93,11 +94,18 @@ static void SamplingFunction(void *argv)
     int32_t out;
     while(!*hid->ExitThread())
     {
-        Handle handles[] = {*padtimer, *accelintrevent};
+        Handle handles[] = {irtimer, *padtimer, *accelintrevent};
         LightLock_Lock(lock);
-        ret = svcWaitSynchronizationN(&out, handles, 2, false, -1LL);
+        ret = svcWaitSynchronizationN(&out, handles, 3, false, -1LL);
         switch(out){
+
             case 0:
+            {
+                irSampling();
+                break;
+            }
+
+            case 1:
             {
                 ret = CDCHID_GetData(&touchscreendata, &circlepaddata);
                 if(ret == 0)
@@ -108,7 +116,8 @@ static void SamplingFunction(void *argv)
                 break;
             }
 
-            case 1:
+
+            case 2:
             {
                 hid->GetAccelerometer()->Sampling();
                 break;

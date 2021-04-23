@@ -1,3 +1,5 @@
+#include <new>
+#include <cstdlib>
 #include <3ds.h>
 #include "irrst.hpp"
 #include "printf.h"
@@ -7,16 +9,16 @@ u32 latestkeys = 0;
 u32 *latestKeysPA;
 u32 *statePA;
 u16 counter;
-#define PA_PTR(addr)            (void *)((u32)(addr) | 1 << 31)
+IrrstRing *ring;
 Handle irrstHandle_;
 Handle irrstMemHandle_;
 Handle irrstEvent_;
-
+#define PA_PTR(addr)            (void *)((u32)(addr) | 1 << 31);
 vu32* irrstSharedMem_;
-
+Handle irtimer;
 static u32 kHeld;
 int irrstRefCount;
-
+u8 ouraddr[0x98];
 
 Result IRRST_GetHandles_(Handle* outMemHandle, Handle* outEventHandle)
 {
@@ -70,8 +72,9 @@ Result irrstInit_(uint8_t steal)
 	if(R_FAILED(ret=IRRST_GetHandles_(&irrstMemHandle_, &irrstEvent_))) goto cleanup1;
 
 	// Initialize ir:rst
-	if(envGetHandle("ir:rst") == 0) ret = IRRST_Initialize_(10, 0);
+	if(envGetHandle("ir:rst") == 0) ret = IRRST_Initialize_(8, 0);
 
+/*
 	// Map ir:rst shared memory.
 	irrstSharedMem_=(vu32*)mappableAlloc(0x98);
 	if(!irrstSharedMem_)
@@ -81,15 +84,16 @@ Result irrstInit_(uint8_t steal)
 	}
 
 	if(R_FAILED(ret = svcMapMemoryBlock(irrstMemHandle_, (u32)irrstSharedMem_, MEMPERM_READ, MEMPERM_DONTCARE))) goto cleanup2;
-
+	ring = (IrrstRing*)irrstSharedMem_;
+*/
 	return 0;
 
 cleanup2:
 	svcCloseHandle(irrstMemHandle_);
 	if(irrstSharedMem_ != NULL)
 	{
-		mappableFree((void*) irrstSharedMem_);
-		irrstSharedMem_ = NULL;
+		//mappableFree((void*) irrstSharedMem_);
+		//irrstSharedMem_ = NULL;
 	}
 cleanup1:
 	svcCloseHandle(irrstHandle_);
@@ -107,15 +111,15 @@ void irrstExit_(void)
 
 	svcCloseHandle(irrstEvent_);
 	// Unmap ir:rst sharedmem and close handles.
-	svcUnmapMemoryBlock(irrstMemHandle_, (u32)irrstSharedMem_);
+	//svcUnmapMemoryBlock(irrstMemHandle_, (u32)irrstSharedMem_);
 	if(envGetHandle("ir:rst") == 0) IRRST_Shutdown_();
 	svcCloseHandle(irrstMemHandle_);
 	svcCloseHandle(irrstHandle_);
 
 	if(irrstSharedMem_ != NULL)
 	{
-		mappableFree((void*) irrstSharedMem_);
-		irrstSharedMem_ = NULL;
+		//mappableFree((void*) irrstSharedMem_);
+		//irrstSharedMem_ = (vu32*)&ouraddr[0];
 	}
 }
 
@@ -141,25 +145,24 @@ u32 irrstCheckSectionUpdateTime_(vu32 *sharedmem_section, u32 id)
 	return 0;
 }
 
+
+char data[100];
+
 void irrstScanInput_(void)
 {
-	if(irrstRefCount==0)return;
-
 	u32 Id=0;
 	kHeld = 0;
-	if(irrstSharedMem_ != NULL) return;
 	Id = irrstSharedMem_[4]; //PAD / circle-pad
 	if(Id>7)Id=0;
 	if(irrstCheckSectionUpdateTime_(irrstSharedMem_, Id)==0)
 	{
-		kHeld = irrstSharedMem_[6 + Id*4];
+		kHeld = ring->GetLatest(Id);
 	}
 }
 
 u32 irrstKeysHeld_(void)
 {
-	if(irrstRefCount>0)return kHeld;
-	return -1;
+	return kHeld;
 }
 
 
@@ -211,6 +214,7 @@ Result IRU_Shutdown_(void)
 	return ret;
 }
 
+
 Result iruInit_(unsigned char c)
 {
 	Result ret = 0;
@@ -220,6 +224,12 @@ Result iruInit_(unsigned char c)
 
 	ret = srvGetServiceHandle(&iruHandle, "ir:u");
 	if(R_FAILED(ret))goto cleanup0;
+
+	irrstSharedMem_ = (vu32*)&ouraddr[0];
+	ring = (IrrstRing*)irrstSharedMem_;
+	svcCreateTimer(&irtimer, RESET_ONESHOT);
+	if(R_FAILED(ret = svcSetTimer(irtimer, 8000000LL, 0LL)))
+        *(u32*)0x8 = ret;
 
 	ret = IRU_Initialize_();
 	if(R_FAILED(ret))goto cleanup1;
@@ -246,7 +256,6 @@ void iruExit_(void)
 	iruHandle = 0;
 }
 
-u32 latestkeysPAdefer = 0;
 void iruScanInput_()
 {
 	u8 state = *statePA;
@@ -257,19 +266,43 @@ void iruScanInput_()
 		irrstInit_(0);
 	}
 
-	if(counter++ % 4 == 0) {
-		latestkeysPAdefer = *latestKeysPA;
-		*latestKeysPA  = 0;
-		return;
-	}
-	latestkeys = latestkeysPAdefer;
+	irrstScanInput_();
 }
 
-char data[100];
 u32 iruKeysHeld_()
 {
 	u8 state = *statePA;
-	sprintf_(data, "latestkeys %08X kHeld(ir) %08X irrstrefcount %d inited:%d\n", latestkeys, kHeld, irrstRefCount, state);
-	svcOutputDebugString(data, 100);
-	return latestkeys;
+	//sprintf_(data, "latestkeys %08X kHeld(ir) %08X irrstrefcount %d inited:%d\n", latestkeys, kHeld, irrstRefCount, state);
+	//svcOutputDebugString(data, 100);
+	return kHeld;
+}
+
+void irSampling()
+{
+	IrrstEntry entry;
+	svcSetTimer(irtimer, 8000000LL, 0LL);
+	volatile uint32_t latest = *latestKeysPA;
+	entry.pressedpadstate = (latest ^ latestkeys) & ~latestkeys;
+    entry.releasedpadstate = (latest ^ latestkeys) & latestkeys;
+    entry.currpadstate = latest;
+	ring->WriteToRing(&entry);
+	latestkeys = latest;
+}
+
+void IrrstRing::WriteToRing(IrrstEntry *entry)
+{
+	uint32_t index = m_updatedindex;
+    if(index == 7)
+        index = 0;
+    else
+        index++;
+    ExclusiveWrite32(&m_entries[index].currpadstate, entry->currpadstate);
+    ExclusiveWrite32(&m_entries[index].pressedpadstate, entry->pressedpadstate);
+    ExclusiveWrite32(&m_entries[index].releasedpadstate, entry->releasedpadstate);
+    if(index == 0) // When index is 0 we need to update tickcount
+    {
+        m_oldtickcount = m_tickcount;
+        m_tickcount = svcGetSystemTick();
+    }
+    ExclusiveWrite32(&m_updatedindex, index);
 }
