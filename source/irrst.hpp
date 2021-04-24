@@ -31,7 +31,10 @@ class IrrstRing
             m_oldtickcount = 0;
             m_updatedindex = 0;
         }
-        u32 GetLatest(u8 index) { return m_entries[index].currpadstate; };
+        s32 GetLatest(u8 index) { return m_entries[index].currpadstate; };
+        s32 GetIndex() { return m_updatedindex; };
+        int64_t GetTickCount() { return m_tickcount; };
+        int64_t GetOldTickCount() { return m_oldtickcount; };
         void WriteToRing(IrrstEntry *entry);
     private:
         int64_t m_tickcount = 0;
