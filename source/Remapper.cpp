@@ -1,6 +1,7 @@
 #include <strings.h>
 #include "Remapper.hpp"
 #include "json.h"
+#include "printf.h"
 
 static Result PMDBG_GetCurrentAppInfo(FS_ProgramInfo *outProgramInfo, u32 *outPid, u32 *outLaunchFlags)
 {
@@ -146,9 +147,12 @@ void Remapper::GenerateFileLocation()
     strcat(m_fileloc, "/rehid.json");
 }
 
+extern char data[0x100];
+
 uint32_t Remapper::Remap(uint32_t hidstate)
 {
     uint32_t newstate = hidstate;
+
     for(int i = 0; i < m_keyentries; i++)
     {
         if((hidstate & m_remapkeyobjects[i].oldkey) == m_remapkeyobjects[i].oldkey)
@@ -157,8 +161,10 @@ uint32_t Remapper::Remap(uint32_t hidstate)
             newstate = newstate ^ m_remapkeyobjects[i].oldkey;
         }
     }
+
     m_touchoveridex = 0;
     m_touchoveridey = 0;
+
     for(int i = 0; i < m_touchentries; i++)
     {
         if((hidstate & m_remaptouchobjects[i].key) == m_remaptouchobjects[i].key)
@@ -168,6 +174,20 @@ uint32_t Remapper::Remap(uint32_t hidstate)
             m_touchoveridey = m_remaptouchobjects[i].y;
         }
     }
+
+    m_cpadoveridex = -1;
+    m_cpadoveridey = -1;
+
+    for(int i = 0; i < m_cpadentries; i++)
+    {
+        if((hidstate & m_remapcpadobjects[i].key) == m_remapcpadobjects[i].key)
+        {
+            newstate &= ~m_remapcpadobjects[i].key;
+            m_cpadoveridex = m_remapcpadobjects[i].x;
+            m_cpadoveridey = m_remapcpadobjects[i].y;
+        }
+    }
+
     return newstate;
 }
 
@@ -225,6 +245,20 @@ void Remapper::ParseConfigFile()
                 m_remaptouchobjects[i].key = keystrtokeyval(arr->u.array.values[i]->u.object.values[1].value->u.string.ptr);
             }
         }
+        
+        else if(strcasecmp(value->u.object.values[index].name, "cpad") == 0)
+        {
+            int length = value->u.object.values[index].value->u.array.length; // size of cpad entries
+            json_value *arr = value->u.object.values[index].value; // cpad
+            m_cpadentries = length;
+            for(int i = 0; i < length; i++)
+            {
+                m_remapcpadobjects[i].x = arr->u.array.values[i]->u.object.values[0].value->u.array.values[0]->u.integer;
+                m_remapcpadobjects[i].y = arr->u.array.values[i]->u.object.values[0].value->u.array.values[1]->u.integer;
+                m_remapcpadobjects[i].key = keystrtokeyval(arr->u.array.values[i]->u.object.values[1].value->u.string.ptr);
+            }
+        }
+        
         else if(strcasecmp(value->u.object.values[index].name, "cpadtodpad") == 0)
         {
             json_value *cpadtodpad = value->u.object.values[index].value; // CPAD-TO-DPAD
@@ -234,6 +268,11 @@ void Remapper::ParseConfigFile()
         {
             json_value *dpadtocpad = value->u.object.values[index].value; // DPAD-TO-CPAD
             m_dodpadtocpad = dpadtocpad->u.boolean & 0xFF;
+        }
+        else if(strcasecmp(value->u.object.values[index].name, "overridecpadpro") == 0)
+        {
+            json_value *overridecppro = value->u.object.values[index].value; //  OVERRIDE CPAD PRO
+            overridecpadpro = overridecppro->u.boolean & 0xFF;
         }
     }
     json_value_free(value);

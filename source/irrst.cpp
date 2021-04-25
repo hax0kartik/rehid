@@ -18,6 +18,7 @@ vu32* irrstSharedMem_;
 Handle irtimer;
 static u32 kHeld;
 int irrstRefCount;
+u8 overridecpadpro = 0;
 
 Result IRRST_GetHandles_(Handle* outMemHandle, Handle* outEventHandle)
 {
@@ -250,13 +251,13 @@ void iruExit_(void)
 void iruScanInput_()
 {
     u8 state = *statePA;
-    if(state == 1 && irrstRefCount >= 1) { //iruser was initialized
+    
+    if(state == 1 && irrstRefCount >= 1 && overridecpadpro == 0) { //iruser was initialized
         irrstExit_();
     }
-    if(state == 0 && irrstRefCount <= 0) {
+    else if(state == 0 && irrstRefCount <= 0) {
         irrstInit_(0);
     }
-
     irrstScanInput_();
 }
 

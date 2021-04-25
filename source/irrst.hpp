@@ -1,7 +1,6 @@
 #pragma once
 #include <3ds.h>
 #include "exclusive_rw.hpp"
-#include "CirclePad.hpp"
 
 Result iruInit_(uint8_t steal = 0);
 void irrstExit_(void);
@@ -9,7 +8,7 @@ void iruScanInput_(void);
 u32 iruKeysHeld_(void);
 Result irrstInit_(uint8_t);
 void irSampling();
-
+extern u8 overridecpadpro;
 struct IrrstEntry
 {
     s32 currpadstate;

@@ -89,6 +89,12 @@ uint32_t CirclePad::ConvertToHidButtons(CirclePadEntry *circlepad, uint32_t butt
     CirclePadEntry adjusted;
     buttons = buttons & 0xFFFFFFF;
     u32 left = KEY_CPAD_LEFT, right = KEY_CPAD_RIGHT, up = KEY_CPAD_UP, down = KEY_CPAD_DOWN;
+    if(remapper->m_cpadoveridex !=-1 && remapper->m_cpadoveridey != -1)
+    {
+        circlepad->x = remapper->m_cpadoveridex;
+        circlepad->y = remapper->m_cpadoveridey;
+    }
+    
     if(remapper->m_docpadtodpad)
     {
         left = KEY_DLEFT;
@@ -117,7 +123,7 @@ uint32_t CirclePad::ConvertToHidButtons(CirclePadEntry *circlepad, uint32_t butt
         circlepad->y = 0;
     }
     
-    if(remapper->m_dodpadtocpad)
+    else if(remapper->m_dodpadtocpad)
     {
         if(buttons & KEY_DLEFT)
         {
