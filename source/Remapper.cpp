@@ -129,7 +129,7 @@ static void hexItoa(u64 number, char *out, u32 digits, bool uppercase)
     while(i < digits) out[digits - 1 - i++] = '0';
 }
 
-static json_object_entry * getRemapKey(json_value *value, char *name)
+static json_object_entry *getremapkey(json_value *value, char *name)
 {
     // Only perform key lookup if the object has 2 keys to avoid slowdowns from invalid json
     if (value->type == json_type::json_object && value->u.object.length == 2) {
@@ -242,8 +242,8 @@ void Remapper::ParseConfigFile()
             for(int i = 0; i < length; i++)
             {
                 // Process key objects
-                json_object_entry * getkey = getRemapKey(arr->u.array.values[i], "get");
-                json_object_entry * presskey = getRemapKey(arr->u.array.values[i], "press");
+                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
                 if (getkey != nullptr && presskey != nullptr) {
                     // pointers are not null, matches found
                     m_remapkeyobjects[i].newkey = keystrtokeyval(getkey->value->u.string.ptr);
@@ -258,8 +258,8 @@ void Remapper::ParseConfigFile()
             m_touchentries = length;
             for(int i = 0; i < length; i++)
             {
-                json_object_entry * getkey = getRemapKey(arr->u.array.values[i], "get");
-                json_object_entry * presskey = getRemapKey(arr->u.array.values[i], "press");
+                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
                 if (getkey != nullptr && presskey != nullptr) {
                     // pointers are not null, matches found
                     m_remaptouchobjects[i].x = getkey->value->u.array.values[0]->u.integer;
@@ -277,8 +277,8 @@ void Remapper::ParseConfigFile()
             m_cpadentries = length;
             for(int i = 0; i < length; i++)
             {
-                json_object_entry * getkey = getRemapKey(arr->u.array.values[i], "get");
-                json_object_entry * presskey = getRemapKey(arr->u.array.values[i], "press");
+                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
                 if (getkey != nullptr && presskey != nullptr) {
                     // pointers are not null, matches found
                     m_remapcpadobjects[i].x = getkey->value->u.array.values[0]->u.integer;
