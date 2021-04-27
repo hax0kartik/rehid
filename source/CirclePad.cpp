@@ -1,6 +1,28 @@
 #include <cmath>
 #include "CirclePad.hpp"
 
+
+void CirclePad::GetConfigSettings()
+{
+    struct circlepadcalib{
+        float scalex;
+        float scaley;
+        uint16_t centerx;
+        uint16_t centery;
+        uint8_t pad[0x10];
+    };
+    static_assert(sizeof(circlepadcalib) == 0x1C, "Size of circlepadcalib is not 0x1C bytes!");
+    circlepadcalib calib;
+    cfguInit();
+    Result ret = CFG_GetConfigInfoBlk4(0x1C, 0x40001, &calib);
+    cfguExit();
+    if(R_FAILED(ret)) *(u32*)ret = 0xCCC;
+    m_scalex = calib.scalex;
+    m_scaley = calib.scaley;
+    m_center.x = calib.centerx;
+    m_center.y = calib.centery;
+}
+
 void CirclePad::RawToCirclePadCoords(CirclePadEntry *result, CirclePadEntry raw)
 {
     result->x = raw.x;
@@ -108,13 +130,13 @@ uint32_t CirclePad::ConvertToHidButtons(CirclePadEntry *circlepad, uint32_t butt
     if(adjusted.y)
         tanxbyy = (adjusted.x << 8) / adjusted.y;
     
-    if(0 < adjusted.x && -81 <= tanybyx && 81 >= tanybyx)
+    if(0 < adjusted.x && -443 <= tanybyx && 443 >= tanybyx)
         buttons |= right;
-    else if(0 > adjusted.x && -81 <= tanybyx && 81 >= tanybyx)
+    else if(0 > adjusted.x && -443 <= tanybyx && 443 >= tanybyx)
         buttons |= left;
-    if(0 < adjusted.y && -81 <= tanxbyy && 81 >= tanxbyy)
+    if(0 < adjusted.y && -443 <= tanxbyy && 443 >= tanxbyy)
         buttons |= up;
-    else if(0 > adjusted.y && -81 <= tanxbyy && 81 >= tanxbyy)
+    else if(0 > adjusted.y && -443 <= tanxbyy && 443 >= tanxbyy)
         buttons |= down;
 
     if(remapper->m_docpadtodpad)

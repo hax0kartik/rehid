@@ -10,6 +10,7 @@ struct CirclePadEntry
 class CirclePad
 {
     public:
+        void GetConfigSettings();
         void RawToCirclePadCoords(CirclePadEntry *result, CirclePadEntry raw);
         uint32_t ConvertToHidButtons(CirclePadEntry *circlepad, uint32_t buttons, Remapper *remapper);
         void AdjustValues(int16_t *adjustedx, int16_t *adjustedy, int rawx, int rawy, int min, int max);

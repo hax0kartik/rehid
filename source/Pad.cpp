@@ -14,6 +14,7 @@ void Pad::Initialize()
         m_isinitialized = true;
         m_latestkeys = (vu32)(IOHIDPAD) ^ 0xFFF;
         m_slider.GetConfigSettings();
+        m_circlepad.GetConfigSettings();
         svcCreateTimer(&m_timer, RESET_ONESHOT);
         svcCreateEvent(&m_event, RESET_ONESHOT);
     }

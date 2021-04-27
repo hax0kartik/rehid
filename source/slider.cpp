@@ -39,25 +39,22 @@ float Slider::Normalize()
     float fval2 = 0.0f;
     const int32_t SOMECONST = 2; 
 
-    if (m_rawstate - v1 < -SOMECONST)
+    int32_t diff = m_rawstate - v1;
+    if (diff < -SOMECONST)
         v1 = m_rawstate + SOMECONST;
-    else if(m_rawstate - v1 > SOMECONST)
+    else if(diff > SOMECONST)
         v1 = m_rawstate - SOMECONST;
 
     if(m_lowerbound + SOMECONST >= v1)
         fval2 = 0.0f;
-
-    if(m_lowerbound + SOMECONST < v1)
-    {
-        if(v1 < m_upperbound - SOMECONST)
-            fval2 = (float)(v1 - m_lowerbound - SOMECONST) / (m_upperbound - m_lowerbound - (SOMECONST * 2));
-        else
-            fval2 = 1.0f;
-    }
+    else if(v1 >= m_upperbound - SOMECONST)
+        fval2 = 1.0f;
+    else
+        fval2 = (float)(v1 - m_lowerbound + SOMECONST) / (float)((m_upperbound - SOMECONST) + (m_lowerbound + SOMECONST));
 
     fval1 = fval1 + ((fval2 - fval1) * 0.5f);
 
-    if(fval1 > 1.0f) fval1 = 1.0f;
+    if(fval1 > (1.0f - 0.00001f)) fval1 = 1.0f;
     else if(fval1 < 0.00001f) fval1 = 0.0f;
 
     return fval1;
