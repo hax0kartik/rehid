@@ -129,6 +129,19 @@ static void hexItoa(u64 number, char *out, u32 digits, bool uppercase)
     while(i < digits) out[digits - 1 - i++] = '0';
 }
 
+static json_object_entry *getremapkey(json_value *value, char *name)
+{
+    // Only perform key lookup if the object has 2 keys to avoid slowdowns from invalid json
+    if (value->type == json_type::json_object && value->u.object.length == 2) {
+        for (int i = 0; i < value->u.object.length; i++) {
+            if (strcasecmp(value->u.object.values[i].name, name)) {
+                return &value->u.object.values[i];
+            }
+        }
+    }
+    return nullptr;
+}
+
 void Remapper::GenerateFileLocation()
 {
     pmDbgInit();
@@ -229,8 +242,13 @@ void Remapper::ParseConfigFile()
             for(int i = 0; i < length; i++)
             {
                 // Process key objects
-                m_remapkeyobjects[i].newkey = keystrtokeyval(arr->u.array.values[i]->u.object.values[0].value->u.string.ptr);
-                m_remapkeyobjects[i].oldkey = keystrtokeyval(arr->u.array.values[i]->u.object.values[1].value->u.string.ptr);
+                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
+                if (getkey != nullptr && presskey != nullptr) {
+                    // pointers are not null, matches found
+                    m_remapkeyobjects[i].newkey = keystrtokeyval(getkey->value->u.string.ptr);
+                    m_remapkeyobjects[i].oldkey = keystrtokeyval(presskey->value->u.string.ptr);
+                }
             }
         }
         else if(strcasecmp(value->u.object.values[index].name, "touch") == 0)
@@ -240,9 +258,15 @@ void Remapper::ParseConfigFile()
             m_touchentries = length;
             for(int i = 0; i < length; i++)
             {
-                m_remaptouchobjects[i].x = arr->u.array.values[i]->u.object.values[0].value->u.array.values[0]->u.integer;
-                m_remaptouchobjects[i].y = arr->u.array.values[i]->u.object.values[0].value->u.array.values[1]->u.integer;
-                m_remaptouchobjects[i].key = keystrtokeyval(arr->u.array.values[i]->u.object.values[1].value->u.string.ptr);
+                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
+                if (getkey != nullptr && presskey != nullptr) {
+                    // pointers are not null, matches found
+                    m_remaptouchobjects[i].x = getkey->value->u.array.values[0]->u.integer;
+                    m_remaptouchobjects[i].y = getkey->value->u.array.values[1]->u.integer;
+                    m_remaptouchobjects[i].key = keystrtokeyval(presskey->value->u.string.ptr);
+                }
+                
             }
         }
         
@@ -253,9 +277,14 @@ void Remapper::ParseConfigFile()
             m_cpadentries = length;
             for(int i = 0; i < length; i++)
             {
-                m_remapcpadobjects[i].x = arr->u.array.values[i]->u.object.values[0].value->u.array.values[0]->u.integer;
-                m_remapcpadobjects[i].y = arr->u.array.values[i]->u.object.values[0].value->u.array.values[1]->u.integer;
-                m_remapcpadobjects[i].key = keystrtokeyval(arr->u.array.values[i]->u.object.values[1].value->u.string.ptr);
+                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
+                if (getkey != nullptr && presskey != nullptr) {
+                    // pointers are not null, matches found
+                    m_remapcpadobjects[i].x = getkey->value->u.array.values[0]->u.integer;
+                    m_remapcpadobjects[i].y = getkey->value->u.array.values[1]->u.integer;
+                    m_remapcpadobjects[i].key = keystrtokeyval(presskey->value->u.string.ptr);
+                }
             }
         }
         
