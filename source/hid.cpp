@@ -28,8 +28,8 @@ void Hid::CreateAndMapMemoryBlock()
         
     }
     else svcBreak(USERBREAK_ASSERT);
-    for(int i = 0; i < 4; i++)
-        svcCreateEvent(&dummyhandles[i], RESET_STICKY);
+    svcCreateEvent(&dummyhandles[2], RESET_STICKY);
+    svcCreateEvent(&dummyhandles[3], RESET_ONESHOT);
     LightLock_Init(&m_sleeplock);
 }
 
@@ -102,6 +102,7 @@ static void SamplingFunction(void *argv)
             case 0:
             {
                 irSampling();
+                hid->GetGyroscope()->Sampling();
                 break;
             }
 

@@ -82,7 +82,7 @@ void IPC::HandleCommands(Hid *hid)
             cmdbuf[4] = *hid->GetPad()->GetEvent();
             cmdbuf[5] = *hid->GetTouch()->GetEvent();
             cmdbuf[6] = *hid->GetAccelerometer()->GetEvent();
-            cmdbuf[7] = hid->dummyhandles[2];
+            cmdbuf[7] = *hid->GetGyroscope()->GetEvent();
             cmdbuf[8] = hid->dummyhandles[3];
             break;
         }
@@ -147,7 +147,7 @@ void IPC::HandleCommands(Hid *hid)
 
         case 0x13:
         {
-            svcSignalEvent(hid->dummyhandles[2]);
+            hid->GetGyroscope()->IncreementHandleIndex();
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;
@@ -155,7 +155,7 @@ void IPC::HandleCommands(Hid *hid)
 
         case 0x14:
         {
-            svcClearEvent(hid->dummyhandles[2]);
+             hid->GetGyroscope()->DecreementhandleIndex();
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;

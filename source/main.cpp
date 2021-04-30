@@ -99,8 +99,8 @@ extern "C"
         fsSysInit();
         Result ret = mcuHidInit();
         if(ret != 0) *(u32*)ret = 0xFFAA; 
-       // gdbHioDevInit();
-       // gdbHioDevRedirectStdStreams(false, true, false);
+        //gdbHioDevInit();
+        //gdbHioDevRedirectStdStreams(false, true, false);
         ptmSysmInit();
       //  logInit();
     }

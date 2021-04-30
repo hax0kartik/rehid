@@ -39,3 +39,4 @@ class GyroscopeRing
         GyroscopeEntry m_rawentry;
         GyroscopeEntry m_entries[32];
 };
+static_assert(sizeof(GyroscopeRing) == 0xE0, "Sizeof Gyroring is not 0xE0 bytess!");

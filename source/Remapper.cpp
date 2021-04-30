@@ -134,7 +134,7 @@ static json_object_entry *getremapkey(json_value *value, char *name)
     // Only perform key lookup if the object has 2 keys to avoid slowdowns from invalid json
     if (value->type == json_type::json_object && value->u.object.length == 2) {
         for (int i = 0; i < value->u.object.length; i++) {
-            if (strcasecmp(value->u.object.values[i].name, name)) {
+            if (strcasecmp(value->u.object.values[i].name, name) == 0) {
                 return &value->u.object.values[i];
             }
         }
