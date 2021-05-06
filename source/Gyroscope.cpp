@@ -9,14 +9,24 @@ void Gyroscope::DisableSampling()
 {
     m_internalstruct.sampling = 0;
     uint8_t variant = m_internalstruct.variant;
-    I2C_WriteRegister8(m_internalstruct.devid, m_gyroregs[variant].interruptconfig, 0); // Disable Interrupts
-    I2C_EnableRegisterBits8(m_internalstruct.devid, m_gyroregs[variant].powermgm, variant | 64); // Enable Sleep
+    if(variant == 2)
+    {
+        I2C_WriteRegister8(m_internalstruct.devid, 34, 0);
+        I2C_EnableRegisterBits8(m_internalstruct.devid, 57, 32);
+        I2C_DisableRegisterBits8(m_internalstruct.devid, 32, 8);
+    }
+    else
+    {
+        I2C_WriteRegister8(m_internalstruct.devid, m_gyroregs[variant].interruptconfig, 0); // Disable Interrupts
+        I2C_EnableRegisterBits8(m_internalstruct.devid, m_gyroregs[variant].powermgm, variant | 64); // Enable Sleep
+    }
     m_internalstruct.sleeping = 1;
 }
 
 void Gyroscope::SetSamplingRate(uint8_t samplingrate)
 {
     uint8_t variant = m_internalstruct.variant;
+    if(variant == 2) return (void)I2C_WriteRegister8(m_internalstruct.devid, 36, 0);
     I2C_WriteRegister8(m_internalstruct.devid, m_gyroregs[variant].dlpf, samplingrate);
     if(variant == 1) I2C_WriteRegister8(m_internalstruct.devid, m_gyroregs[variant].fssel, 24);
 }
@@ -25,8 +35,18 @@ void Gyroscope::InternalSetup()
 {
     uint8_t variant = m_internalstruct.variant;
     SetSamplingRate(0x1A); // This sets the sampiling rate to 98Hz/92Hz
-    I2C_WriteRegister8(m_internalstruct.devid, m_gyroregs[variant].sampleratedivider, 9); // Set to 100Hz
-    I2C_WriteRegister8(m_internalstruct.devid, m_gyroregs[variant].interruptconfig, 1); // Enable Data Ready Interrupt
+    if(variant == 2)
+    {
+        I2C_WriteRegister8(m_internalstruct.devid, 35, 240);
+        I2C_DisableRegisterBits8(m_internalstruct.devid, 32, 240);
+        I2C_WriteRegister8(m_internalstruct.devid, 34, 8);
+        I2C_EnableRegisterBits8(m_internalstruct.devid, 57, 32);
+    }
+    else
+    {
+        I2C_WriteRegister8(m_internalstruct.devid, m_gyroregs[variant].sampleratedivider, 9); // Set to 100Hz
+        I2C_WriteRegister8(m_internalstruct.devid, m_gyroregs[variant].interruptconfig, 1); // Enable Data Ready Interrupt
+    }
     m_internalstruct.sleeping = 0;
 }
 
@@ -39,7 +59,10 @@ void Gyroscope::SetupForSampling()
 
 void Gyroscope::EnableSampling()
 {
-    I2C_DisableRegisterBits8(m_internalstruct.devid, m_gyroregs[m_internalstruct.variant].powermgm, 64); // Disable Sleep
+    if(m_internalstruct.variant == 2)
+        I2C_EnableRegisterBits8(m_internalstruct.devid, 32, 8);
+    else
+        I2C_DisableRegisterBits8(m_internalstruct.devid, m_gyroregs[m_internalstruct.variant].powermgm, 64); // Disable Sleep
 }
 
 Result Gyroscope::InternalInit()
@@ -57,10 +80,19 @@ Result Gyroscope::InternalInit()
         {
             m_internalstruct.variant = 1;
             m_internalstruct.devid = 11;
-            if(R_FAILED(I2C_DisableRegisterBits8(11, m_gyroregs[1].powermgm, 64))) *(u32*)0x122 = 0x1;
+            if(R_FAILED(I2C_DisableRegisterBits8(11, m_gyroregs[1].powermgm, 64)))
+            {
+                m_internalstruct.variant = 2;
+                m_internalstruct.devid = 9;
+                if(R_FAILED(I2C_EnableRegisterBits8(9, 32, 8)))
+                    *(u32*)ret = 0x987;
 
+            }
         }
-        I2C_EnableRegisterBits8(m_internalstruct.devid, m_gyroregs[m_internalstruct.variant].powermgm, 128); // Reset Mask
+        if(m_internalstruct.variant == 2)
+            I2C_EnableRegisterBits8(m_internalstruct.devid, 57, 4);
+        else
+            I2C_EnableRegisterBits8(m_internalstruct.devid, m_gyroregs[m_internalstruct.variant].powermgm, 128); // Reset Mask
         svcSleepThread(4 * 1000 * 1000);
         m_internalstruct.sleeping = 0;
         m_internalstruct.sampling = 1;
@@ -73,10 +105,20 @@ Result Gyroscope::InternalInit()
 void Gyroscope::ReadGyroData(GyroscopeEntry *entry)
 {
     uint8_t data[6];
-    I2C_ReadRegisterBuffer8(m_internalstruct.devid, m_gyroregs[m_internalstruct.variant].gyroxout, (u8*)&data[0], 6);
-    entry->x = (data[0] << 8) | data[1];
-    entry->y = (data[2] << 8) | data[3];
-    entry->z = (data[4] << 8) | data[5];
+    if(m_internalstruct.variant == 2)
+    {
+        I2C_ReadRegisterBuffer8(m_internalstruct.devid, 0xA8, (u8*)&data[0], 6);
+        entry->x = (data[0] << 8) | data[1];
+        entry->y = -((data[2] << 8) | data[3]);
+        entry->z = (data[4] << 8) | data[5];
+    }
+    else
+    {
+        I2C_ReadRegisterBuffer8(m_internalstruct.devid, m_gyroregs[m_internalstruct.variant].gyroxout, (u8*)&data[0], 6);
+        entry->x = (data[0] << 8) | data[1];
+        entry->y = (data[2] << 8) | data[3];
+        entry->z = (data[4] << 8) | data[5];
+    }
 }
 
 void Gyroscope::GetCalibParam(GyroscopeCalibrateParam *param)
