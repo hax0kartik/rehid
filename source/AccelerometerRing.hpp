@@ -37,5 +37,6 @@ class AccelerometerRing
         int32_t m_updatedindex = 0;
         uint32_t padding;
         AccelerometerEntry m_rawentry;
+        uint16_t padding2;
         AccelerometerEntry m_entries[8];
 };

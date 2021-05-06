@@ -155,7 +155,11 @@ void IPC::HandleCommands(Hid *hid)
 
         case 0x14:
         {
-             hid->GetGyroscope()->DecreementhandleIndex();
+            hid->GetGyroscope()->DecreementhandleIndex();
+            if(hid->GetGyroscope()->GetRefCount() == 0){
+                hid->GetGyroscope()->m_issetupdone = false;
+                hid->GetGyroscope()->DisableSampling();
+            }
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;
@@ -173,6 +177,7 @@ void IPC::HandleCommands(Hid *hid)
         {
             cmdbuf[0] = 0x160180;
             cmdbuf[1] = 0;
+            hid->GetGyroscope()->GetCalibParam((GyroscopeCalibrateParam*)&cmdbuf[2]);
             break;
         }
 

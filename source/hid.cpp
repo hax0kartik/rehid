@@ -8,6 +8,8 @@
 extern "C"
 {
     #include "csvc.h"
+    #include "gpio.h"
+    #include "i2c.h"
 }
 static uint8_t ALIGN(8) hidthreadstack[0x1000];
 void Hid::CreateAndMapMemoryBlock()
@@ -60,6 +62,9 @@ void Hid::InitializeAccelerometer()
 
 void Hid::InitializeGyroscope()
 {
+    if(R_FAILED(i2cHidInit())) svcBreak(USERBREAK_ASSERT);
+    if(R_FAILED(gpiohidInit())) svcBreak(USERBREAK_ASSERT);
+
     m_gyro.Initialize();
     m_gyro.SetGyroscopeRing(m_gyroring);
 }
@@ -89,20 +94,25 @@ static void SamplingFunction(void *argv)
     u32 touchscreendata, circlepaddata;
     Handle *padtimer = hid->GetPad()->GetTimer();
     Handle *accelintrevent = hid->GetAccelerometer()->GetIntrEvent();
+    Handle *gyrointrevent = hid->GetGyroscope()->GetIntrEvent();
     LightLock *lock = hid->GetSleepLock();
     irInit();
     int32_t out;
     while(!*hid->ExitThread())
     {
-        Handle handles[] = {irtimer, *padtimer, *accelintrevent};
+        Handle handles[] = {irtimer, *padtimer, *gyrointrevent, *accelintrevent};
         LightLock_Lock(lock);
-        ret = svcWaitSynchronizationN(&out, handles, 3, false, -1LL);
+        ret = svcWaitSynchronizationN(&out, handles, 4, false, -1LL);
+        if(!hid->GetGyroscope()->m_issetupdone && osGetTime() - hid->GetGyroscope()->timeenable > 90 && hid->GetGyroscope()->GetRefCount() > 0)
+        {
+            hid->GetGyroscope()->SetupForSampling();
+            hid->GetGyroscope()->m_issetupdone = true;
+        }
         switch(out){
 
             case 0:
             {
                 irSampling();
-                hid->GetGyroscope()->Sampling();
                 break;
             }
 
@@ -117,8 +127,13 @@ static void SamplingFunction(void *argv)
                 break;
             }
 
-
             case 2:
+            {
+                hid->GetGyroscope()->Sampling();
+                break;
+            }
+
+            case 3:
             {
                 hid->GetAccelerometer()->Sampling();
                 break;
@@ -140,6 +155,9 @@ void Hid::StartThreadsForSampling()
         m_gyroring->Reset();
         m_pad.SetTimer();
         m_accel.EnableOrDisableInterrupt();
+        m_gyro.EnableSampling();
+        m_gyro.timeenable = osGetTime();
+        m_gyro.m_issetupdone = false;
         MyThread_Create(&m_samplingthread, SamplingFunction, this, hidthreadstack, 0x1000, 0x15, -2);
         m_accel.EnableOrDisableInterrupt(0); // disable accelerometer interrupt
         m_accel.SetAccelerometerStatus(1); // enable accelerometer

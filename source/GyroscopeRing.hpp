@@ -37,6 +37,7 @@ class GyroscopeRing
         int32_t m_updatedindex = 0;
         uint32_t padding;
         GyroscopeEntry m_rawentry;
+        uint16_t padding2;
         GyroscopeEntry m_entries[32];
 };
 static_assert(sizeof(GyroscopeRing) == 0xE0, "Sizeof Gyroring is not 0xE0 bytess!");
