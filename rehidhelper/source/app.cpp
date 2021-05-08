@@ -7,7 +7,13 @@ void App::DoStuffBeforeMain()
 {
     LightLock_Init(&m_toplock);
     LightLock_Init(&m_botlock);
+    std::string str = "Checking if internet is connected..";
     ui.top_func = std::bind(Draw::DrawLoadingScreen, &m_toplock);
+   // ui.bot_func = std::bind(Draw::DrawLoadingBarAndText, &m_botlock, &str);
+    u32 status = 0;
+    ACU_GetStatus(&status);
+    if(status == 3) 
+        m_connected = true;
     m_titles.PopulateTitleArray();
     m_titles.FilterOutTWLAndUpdate();
     m_titles.PopulateSMDHArray();

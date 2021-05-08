@@ -65,7 +65,7 @@ std::string Utils::ParseJson(const std::string &data)
 
     if(m_j.contains("keys"))
     {
-        for(int i = 0; i < m_j["keys"].size(); i++)
+        for(int i = 0; i < (int)m_j["keys"].size(); i++)
         {
             str += m_j["keys"][i]["press"];
             str += " > ";
@@ -76,7 +76,7 @@ std::string Utils::ParseJson(const std::string &data)
 
     if(m_j.contains("touch"))
     {
-        for(int i = 0; i < m_j["touch"].size(); i++)
+        for(int i = 0; i < (int)m_j["touch"].size(); i++)
         {
             str += m_j["touch"][i]["press"];
             str += " > ";
@@ -87,7 +87,7 @@ std::string Utils::ParseJson(const std::string &data)
 
     if(m_j.contains("cpad"))
     {
-        for(int i = 0; i < m_j["cpad"].size(); i++)
+        for(int i = 0; i < (int)m_j["cpad"].size(); i++)
         {
             str += m_j["cpad"][i]["press"];
             str += " > ";

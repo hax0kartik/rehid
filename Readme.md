@@ -6,20 +6,20 @@ HID module rewrite with the aim of easier button remapping and more.
 
 You need to have the latest luma for this to work correctly.
 
-* Put the `0004013000001D02` folder in `luma/titles`
-
-* Create a folder named `rehid` on the root of your sd card and put the `rehid.json` file in the folder (Check the [How-To-Remap-Buttons](https://github.com/hax0kartik/rehid#how-to-remap-buttons) part to create the rehid.json file)
-
-* Enable Title patching from luma menu. (As shown here: https://github.com/LumaTeam/Luma3DS/wiki/Optional-features)
-
-* Enter game and check if remappings are working
+* Download `rehidhelper.3dsx` from the latest release
+* Open homebrew launcher and run the 3dsx
+* Click `A` on the `Download Rehid` option
+* Restart your 3ds
+* Go to http://young-ravine-66468.herokuapp.com/config and generate your remappings.
+* Run rehidhelper again and select the Scan QR code option
+* Scan your QR.
 
 ## How To Remap Buttons
 
 You first need to create a `rehid.json` file with the remappings you want. For eg:-
 ```Json
 {
-    "remappings":[
+    "keys":[
         {"get":"R", "press":"ZR"},
         {"get":"L", "press":"ZL"}
     ]
@@ -32,7 +32,7 @@ and everytime you press `ZL` key, `L` key would be triggered.
 It is also possible to do custom key combos, i.e.,
 ```Json
 {
-    "remappings":[
+    "keys":[
         {"get":"R", "press":"X+Y"},
         {"get":"L+R", "press":"SELECT"}
     ]
@@ -62,6 +62,6 @@ Get devkitpro, ctrulib and makerom and then `make -j` to compile.
 
 @luigoalma Help, testing and listening to my rants.
 
-Druivensap on my discord server for helping me test out .
+Druivensap on my discord server for helping me test out.
 
 Luma3ds devs and contributors
