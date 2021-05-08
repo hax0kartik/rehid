@@ -31,15 +31,20 @@ include $(DEVKITARM)/3ds_rules
 #     - icon.png
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
-TARGET		:=	$(notdir $(CURDIR))
-BUILD		:=	build
-SOURCES		:=	source source/quirc
-DATA		:=	data
-INCLUDES	:=	include
-GRAPHICS	:=	gfx
-GFXBUILD	:=	$(BUILD)
-ROMFS		:=	romfs
-#GFXBUILD	:=	$(ROMFS)/gfx
+TARGET			:=	$(notdir $(CURDIR))
+BUILD			:=	build
+SOURCES			:=	source source/quirc
+DATA			:=	data
+INCLUDES		:=	include
+GRAPHICS		:=	gfx
+GFXBUILD		:=	$(BUILD)
+ROMFS			:=	romfs
+#GFXBUILD		:=	$(ROMFS)/gfx
+
+APP_TITLE		:=	Rehid Helper
+APP_DESCRIPTION	:=	Helper for downloading remappings
+APP_AUTHOR		:=	hax0kartik
+#ICON			:=	
 
 #---------------------------------------------------------------------------------
 # options for code generation
