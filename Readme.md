@@ -10,7 +10,7 @@ You need to have the latest luma for this to work correctly.
 * Open homebrew launcher and run the 3dsx
 * Click `A` on the `Download Rehid` option
 * Restart your 3ds
-* Go to http://young-ravine-66468.herokuapp.com/config and generate your remappings.
+* Go to https://mikahjc.github.io/3dsRemapBuilder/config and generate your remappings.
 * Run rehidhelper again and select the Scan QR code option
 * Scan your QR.
 
