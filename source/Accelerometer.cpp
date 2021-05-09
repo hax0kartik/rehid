@@ -3,14 +3,20 @@
 
 void Accelerometer::Initialize()
 {
+    AccelerometerCalibration calib;
     if(!m_initialized)
     {
-        m_calib.scalex = 1024;
-        m_calib.scaley = 1024;
-        m_calib.scalez = 1024;
-        m_calib.offsetx = 0;
-        m_calib.offsety = 0;
-        m_calib.offsetz = 0;
+        cfguInit();
+        Result ret = CFG_GetConfigInfoBlk4(0xC, 0x40003u, &calib);
+        cfguExit();
+        if(ret != 0) *(u32*)0x123456 = ret;
+        m_calib.scalex = calib.offsetx;
+        m_calib.offsetx = calib.scalex;
+        m_calib.scaley = calib.offsety;
+        m_calib.offsety = calib.scaley;
+        m_calib.scalez = calib.offsetz;
+        m_calib.offsetz = calib.scalez;
+        
         svcCreateEvent(&m_event, RESET_ONESHOT);
         if(R_FAILED(mcuHidGetAccelerometerEventHandle(&m_irqevent))) svcBreak(USERBREAK_ASSERT);
         m_initialized = 1;

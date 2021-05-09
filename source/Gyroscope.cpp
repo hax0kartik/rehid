@@ -108,8 +108,8 @@ void Gyroscope::ReadGyroData(GyroscopeEntry *entry)
     if(m_internalstruct.variant == 2)
     {
         I2C_ReadRegisterBuffer8(m_internalstruct.devid, 0xA8, (u8*)&data[0], 6);
-        entry->x = (data[0] << 8) | data[1];
-        entry->y = -((data[2] << 8) | data[3]);
+        entry->x = (data[2] << 8) | data[3];
+        entry->y = -((data[0] << 8) | data[1]);
         entry->z = (data[4] << 8) | data[5];
     }
     else
