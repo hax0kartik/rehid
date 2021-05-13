@@ -51,6 +51,7 @@ void Touch::Sampling(u32 touchscreendata, Remapper *remapper)
 {
     TouchEntry rawdata, pixdata;
     int arr[] = {51, 3276, 81940, 68, 4369, 61440};
+    remapper->m_remaptouchkeys = 0;
     
     //printf_("CDCHID_GetData ret: %08x, touchscreendata x: %d, y :%d dummy: %X\n", ret, touchscreendata & 0xFFF, (touchscreendata & 0xFFF000) >> 12, dummy);
     if (((touchscreendata & 0x1000000) >> 16) >> 16 && ((touchscreendata & 0x6000000) >> 25) & 0xFF)
@@ -79,6 +80,20 @@ void Touch::Sampling(u32 touchscreendata, Remapper *remapper)
     }
     else
         RawToPixel(arr, &pixdata, &rawdata);
+    
+    for(int i = 0; i < remapper->m_touchtokeysentries; i++)
+    {
+        uint16_t x = remapper->m_remaptouchtokeysobjects[i].x;
+        uint16_t y = remapper->m_remaptouchtokeysobjects[i].y;
+        uint16_t h = remapper->m_remaptouchtokeysobjects[i].h;
+        uint16_t w = remapper->m_remaptouchtokeysobjects[i].w;
+        if(pixdata.x > x && pixdata.x < x+w && pixdata.y > y && pixdata.y < y+h)
+        {
+            m_latest.touch = pixdata.touch = 0;
+            remapper->m_remaptouchkeys = remapper->m_remaptouchtokeysobjects[i].key;
+        }
+    }
+
     m_ring->SetRaw(rawdata);
     m_ring->WriteToRing(pixdata);
 

@@ -129,7 +129,7 @@ static void hexItoa(u64 number, char *out, u32 digits, bool uppercase)
     while(i < digits) out[digits - 1 - i++] = '0';
 }
 
-static json_object_entry *getremapkey(json_value *value, char *name)
+static json_object_entry *getremapkey(json_value *value, const char *name)
 {
     // Only perform key lookup if the object has 2 keys to avoid slowdowns from invalid json
     if (value->type == json_type::json_object && value->u.object.length == 2) {
@@ -232,6 +232,7 @@ void Remapper::ParseConfigFile()
     if(value == nullptr) *(u32*)0xF00FFAAB = m_filedata[m_filedatasize - 2];
     m_touchentries = 0;
     m_keyentries = 0;
+    m_touchtokeysentries = 0;
     for(int index = 0; index < (int)value->u.object.length; index++ )
     {
         if(strcasecmp(value->u.object.values[index].name, "keys") == 0)
@@ -251,6 +252,7 @@ void Remapper::ParseConfigFile()
                 }
             }
         }
+
         else if(strcasecmp(value->u.object.values[index].name, "touch") == 0)
         {
             int length = value->u.object.values[index].value->u.array.length; // size of touch entries
@@ -266,10 +268,29 @@ void Remapper::ParseConfigFile()
                     m_remaptouchobjects[i].y = getkey->value->u.array.values[1]->u.integer;
                     m_remaptouchobjects[i].key = keystrtokeyval(presskey->value->u.string.ptr);
                 }
-                
             }
         }
-        
+
+        else if(strcasecmp(value->u.object.values[index].name, "touchtokeys") == 0)
+        {
+            int length = value->u.object.values[index].value->u.array.length; // size of touch entries
+            json_value *arr = value->u.object.values[index].value; // touch
+            m_touchtokeysentries = length;
+            for(int i = 0; i < length; i++)
+            {
+                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
+                if (getkey != nullptr && presskey != nullptr) {
+                    // pointers are not null, matches found
+                    m_remaptouchtokeysobjects[i].x = presskey->value->u.array.values[0]->u.integer;
+                    m_remaptouchtokeysobjects[i].y = presskey->value->u.array.values[1]->u.integer;
+                    m_remaptouchtokeysobjects[i].h = presskey->value->u.array.values[2]->u.integer;
+                    m_remaptouchtokeysobjects[i].w = presskey->value->u.array.values[3]->u.integer;
+                    m_remaptouchtokeysobjects[i].key = keystrtokeyval(getkey->value->u.string.ptr);
+                }
+            }
+        }
+
         else if(strcasecmp(value->u.object.values[index].name, "cpad") == 0)
         {
             int length = value->u.object.values[index].value->u.array.length; // size of cpad entries
@@ -287,17 +308,19 @@ void Remapper::ParseConfigFile()
                 }
             }
         }
-        
+
         else if(strcasecmp(value->u.object.values[index].name, "cpadtodpad") == 0)
         {
             json_value *cpadtodpad = value->u.object.values[index].value; // CPAD-TO-DPAD
             m_docpadtodpad = cpadtodpad->u.boolean & 0xFF;
         }
+
         else if(strcasecmp(value->u.object.values[index].name, "dpadtocpad") == 0)
         {
             json_value *dpadtocpad = value->u.object.values[index].value; // DPAD-TO-CPAD
             m_dodpadtocpad = dpadtocpad->u.boolean & 0xFF;
         }
+
         else if(strcasecmp(value->u.object.values[index].name, "overridecpadpro") == 0)
         {
             json_value *overridecppro = value->u.object.values[index].value; //  OVERRIDE CPAD PRO
