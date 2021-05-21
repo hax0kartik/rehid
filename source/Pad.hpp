@@ -21,6 +21,7 @@ class Pad
         uint8_t m_isinitialized = 0;
         uint32_t m_latestkeys = 0;
         uint32_t m_rawkeys = 0;
+        uint32_t m_dummy = 0; // this is used for inputredirections
         Handle m_timer;
         PadRing *m_ring = nullptr;
         Handle m_event;

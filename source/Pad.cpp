@@ -13,6 +13,7 @@ void Pad::Initialize()
     {
         m_isinitialized = true;
         m_latestkeys = (vu32)(IOHIDPAD) ^ 0xFFF;
+        m_dummy = 0x4001;
         m_slider.GetConfigSettings();
         m_circlepad.GetConfigSettings();
         svcCreateTimer(&m_timer, RESET_ONESHOT);
@@ -29,7 +30,8 @@ void Pad::SetTimer()
 extern u8 irneeded;
 void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry *circlepad, Remapper *remapper)
 {
-    volatile uint32_t latest = (vu32)(IOHIDPAD) ^ 0xFFF; 
+    volatile uint32_t latest = (vu32)(IOHIDPAD) ^ 0xFFF;
+    m_dummy = 0x4001;
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
     latest = m_circlepad.ConvertToHidButtons(circlepad, latest, remapper); // if need be this also sets the circlepad entry to 0

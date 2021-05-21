@@ -11,7 +11,50 @@ void Touch::Initialize()
     if(!m_initialized)
     {
         m_initialized = 1;
+        cfguInit();
+        Result ret = CFG_GetConfigInfoBlk4(0x10, 0x40000u, &m_touchcfg);
+        cfguExit();
+        if(ret != 0) *(u32*)0x123457 = ret;
+        CalculateCalibrationStruct();
         svcCreateEvent(&m_event, RESET_ONESHOT);
+    }
+}
+
+void Touch::CalculateCalibrationStruct()
+{
+    touchcalib tmp;
+    tmp.xdotsize = ((m_touchcfg.rawx0 - m_touchcfg.rawx1) << 8) / (int32_t)(m_touchcfg.pointx0 - m_touchcfg.pointx1);
+    tmp.x = (((m_touchcfg.rawx0 + m_touchcfg.rawx1) << 8) - (m_touchcfg.pointx0 + m_touchcfg.pointx1) * tmp.xdotsize) >> 7;
+    tmp.xdotsizeinv = 0x10000000 / (uint32_t)tmp.xdotsize;
+
+    tmp.ydotsize = ((m_touchcfg.rawy0 - m_touchcfg.rawy1) << 8) / (int32_t)(m_touchcfg.pointy0 - m_touchcfg.pointy1);
+    tmp.y = (((m_touchcfg.rawy0 + m_touchcfg.rawy1) << 8) - (m_touchcfg.pointy0 + m_touchcfg.pointy1) * tmp.ydotsize) >> 7;
+    tmp.ydotsizeinv = 0x10000000 / (uint32_t)tmp.ydotsize;
+
+    if(tmp.xdotsize == 0)
+    {
+        m_calib.x = 0;
+        m_calib.xdotsize = 0;
+        m_calib.xdotsizeinv = 0;
+    }
+    else
+    {
+        m_calib.x = tmp.x;
+        m_calib.xdotsize = tmp.xdotsize;
+        m_calib.xdotsizeinv = tmp.xdotsizeinv;
+    }
+
+    if(tmp.ydotsize == 0)
+    {
+        m_calib.y = 0;
+        m_calib.ydotsize = 0;
+        m_calib.ydotsizeinv = 0;
+    }
+    else
+    {
+        m_calib.y = tmp.y;
+        m_calib.ydotsize = tmp.ydotsize;
+        m_calib.ydotsizeinv = tmp.ydotsizeinv;
     }
 }
 
@@ -20,23 +63,23 @@ void Touch::RawToPixel(int *arr, TouchEntry *pixeldata, TouchEntry *rawdata)
     pixeldata->touch = rawdata->touch;
     if (rawdata->touch)
     {
-        int64_t v3 = 4 * rawdata->x - arr[0];
-        int64_t pxx = (((v3 * arr[2]) >> 22) | (((arr[2] * v3) >> 32) << 10));
+        int64_t v3 = 4 * rawdata->x - m_calib.x;
+        int64_t pxx = ((((v3 * m_calib.xdotsizeinv) >> 22) | (((m_calib.xdotsizeinv * v3) >> 32) << 10)));
         if(pxx >= 5 && pxx <= 314)
             pixeldata->x = pxx;
         else if(pxx <= 5)
             pixeldata->x = 5;
         else
-            pixeldata->x = 314;   
+            pixeldata->x = 314;
         
-        int64_t v5 = 4 * rawdata->y - arr[3];
-        int64_t pxy = (((v5 * arr[5]) >> 22) | (((arr[5] * v5) >> 32) << 10));
+        int64_t v5 = 4 * rawdata->y - m_calib.y;
+        int64_t pxy = (((v5 * m_calib.ydotsizeinv) >> 22) | (((m_calib.ydotsizeinv * v5) >> 32) << 10));
         if(pxy >= 5 && pxy <= 234)
             pixeldata->y = pxy;
         else if(pxy <= 5)
             pixeldata->y = 5;
         else
-            pixeldata->y = 234;   
+            pixeldata->y = 234;
         
     }
     else

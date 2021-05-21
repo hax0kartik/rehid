@@ -27,7 +27,7 @@ Result codecInit()
     return ret;
 }
 
-
+/*
 Result CDCHID_GetData(u32 *touchscreendata, u32 *circlepaddata)
 {
     u32 *cmdbuf = getThreadCommandBuffer();
@@ -38,5 +38,16 @@ Result CDCHID_GetData(u32 *touchscreendata, u32 *circlepaddata)
     ret = cmdbuf[1];
     *touchscreendata = cmdbuf[2];
     *circlepaddata = cmdbuf[3];
+    return ret;
+}
+*/
+
+Result CDCHID_GetData(u32 *touchscreendata, u32 *circlepaddata)
+{
+    extern Result CDCHID_GetDataAsm(Handle *cdchandle, u64 *data);
+    u64 data;
+    Result ret = CDCHID_GetDataAsm(&cdchandle, &data);
+    *circlepaddata = (data >> 32) & 0xFFFFFFFF;
+    *touchscreendata = data & 0xFFFFFFFF;
     return ret;
 }
