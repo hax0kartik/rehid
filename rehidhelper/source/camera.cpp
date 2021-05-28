@@ -1,13 +1,10 @@
 #include "camera.hpp"
 #include "draw.hpp"
-#include "icon_t3x.h"
 
 int __stacksize__ = 100 * 1024;
 
 void Camera::Initialize(Titles *titles)
 {
-    m_sheet = C2D_SpriteSheetLoadFromMem(icon_t3x, icon_t3x_size);
-    m_globalimg = C2D_SpriteSheetGetImage(m_sheet, 0);
     m_titles = titles;
     m_buffer = new uint16_t[400 * 240];
     memset(m_buffer, 0, 400 * 240 * 2);
@@ -33,7 +30,6 @@ void Camera::Finalize()
     svcClearEvent(m_finishedevent);
     svcCloseHandle(m_finishedevent);
     m_finishedevent = 0;
-    C2D_SpriteSheetFree(m_sheet);
 }
 
 static void CameraThread(void *arg)
@@ -142,7 +138,6 @@ void Camera::Controls()
     int selected = 0, page = 0;
     int size = 0;
     auto tids = m_titles->GetTitles();
-    tids.push_back(0);
     m_state = 0;
     while(aptMainLoop())
     {
@@ -153,10 +148,8 @@ void Camera::Controls()
             if(keysDown() & KEY_A)
             {
                 auto descvec = m_titles->GetTitlesDescription();
-                descvec.push_back("Global (settings will be applied to all titles.)");
-                ui.top_func = std::bind(Draw::DrawTitleInfo, &m_lock, descvec, &selected);
+                ui.top_func = std::bind(Draw::DrawTitleInfo, &m_lock, descvec, tids, &selected);
                 auto iconvec = m_titles->GetC2DSMDHImgs();
-                iconvec.push_back(m_globalimg);
                 size = iconvec.size();
                 ui.bot_func = std::bind(Draw::DrawGameSelectionScreen, &m_botlock, iconvec, &selected, &page);
                 m_state = 3;

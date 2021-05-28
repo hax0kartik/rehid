@@ -149,26 +149,31 @@ void Draw::DrawConfigScreen(const std::string &data)
     C2D_DrawText(&txt, 0, 10.0f, 10.0f, 0.5f, 0.5f, 0.5f);
 }
 
-void Draw::DrawTitleInfo(LightLock *lock, const std::vector<std::string> &descs, int *selected)
+void Draw::DrawTitleInfo(LightLock *lock, const std::vector<std::string> &descs, const std::vector<uint64_t> &titles, int *selected)
 {
     LightLock_Lock(lock);
     DrawBars(true, 5.0f);
     const char *str = "Current Title: ";
     const char *str2 = "Rehid Helper.";
-    C2D_Text txt[3];
+    C2D_Text txt[4];
+    char tid[35];
     C2D_TextBuf buf = ui.top_text_buf;
     C2D_TextBufClear(buf);
     C2D_TextParse(&txt[0], buf, str);
     C2D_TextParse(&txt[1], buf, descs[*selected].c_str());
     C2D_TextParse(&txt[2], buf, str2);
+    snprintf(tid, 24, "Title: %016llX", titles[*selected]);
+    C2D_TextParse(&txt[3], buf, tid);
     float outwidth, outheight;
     C2D_TextGetDimensions (&txt[0], 1.0f, 1.0f, &outwidth ,&outheight);
     C2D_TextOptimize(&txt[0]);
     C2D_TextOptimize(&txt[1]);
     C2D_TextOptimize(&txt[2]);
+    C2D_TextOptimize(&txt[3]);
     C2D_DrawText(&txt[0], 0, 10.0f, 210.0f, 1.0f, 0.5f, 0.5f);
     C2D_DrawText(&txt[1], 0, 10.0f + (outwidth/2), 210.0f, 1.0f, 0.5f, 0.5f);
     C2D_TextGetDimensions (&txt[2], 1.0f, 1.0f, &outwidth ,&outheight);
     C2D_DrawText(&txt[2], C2D_AlignCenter, 200.0f, (240.0f - outheight) / 2, 1.0f, 1.0f, 1.0f);
+    C2D_DrawText(&txt[3], 0, 10.0f, 170.0f, 1.0f, 0.5f, 0.5f);
     LightLock_Unlock(lock);
 }

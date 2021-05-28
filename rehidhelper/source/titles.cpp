@@ -1,5 +1,6 @@
-#include "titles.hpp"
 #include <cstdio>
+#include "titles.hpp"
+#include "icon_t3x.h"
 
 void Titles::PopulateTitleArray()
 {
@@ -39,11 +40,11 @@ FS_Path fs_make_path_binary(const void* data, u32 size) {
 }
 
 void u16tou8(std::string &buf, const u16 *input, size_t bufsize) {
-	char *data = new char[bufsize];
+    char *data = new char[bufsize];
     ssize_t units = utf16_to_utf8((u8*)data, input, bufsize);
-	if (units < 0)
-		units = 0;
-	data[units] = 0;
+    if (units < 0)
+        units = 0;
+    data[units] = 0;
     buf = data;
     delete[] data;
 }
@@ -76,6 +77,7 @@ void Titles::PopulateSMDHArray()
                         data.push_back(smdh.smallicon[i]);
                     m_smdhvector.push_back(data);
                     m_descvector.push_back(descstr);
+                    m_oktitlesvector.push_back(m_filteredvector[i]);
                 }
             }
             FSFILE_Close(filehandle);
@@ -86,20 +88,20 @@ void Titles::PopulateSMDHArray()
 
 void Titles::ConvertSMDHsToC2D()
 {
-	m_texs.resize(m_smdhvector.size());
-	static const Tex3DS_SubTexture subt3x = {24, 24, 0.0f, 24 / 32.0f, 24 / 32.0f, 0.0f};
+    m_texs.resize(m_smdhvector.size());
+    static const Tex3DS_SubTexture subt3x = {24, 24, 0.0f, 24 / 32.0f, 24 / 32.0f, 0.0f};
     for(int i = 0; i < m_smdhvector.size(); i++)
     {
         m_texs[i] = new C3D_Tex;
-	    C3D_TexInit(m_texs[i], 32, 32, GPU_RGB565);
+        C3D_TexInit(m_texs[i], 32, 32, GPU_RGB565);
         u16* dest = (u16*)m_texs[i]->data + (32 - 24) * 32;
         u16* src  = (u16*)m_smdhvector[i].data();
-	    for (int j = 0; j < 24; j += 8)
-	    {
-		    std::copy(src, src + 24 * 8, dest);
-		    src += 24 * 8;
-		    dest += 32 * 8;
-	    }
+        for (int j = 0; j < 24; j += 8)
+        {
+            std::copy(src, src + 24 * 8, dest);
+            src += 24 * 8;
+            dest += 32 * 8;
+        }
        m_images.push_back({m_texs[i], &subt3x});
     }
 }
@@ -114,4 +116,13 @@ void Titles::ConvertDescsToC2DText()
         C2D_TextParse(&m_c2ddescvector[i], staticbuf, m_descvector[i].c_str());
         C2D_TextOptimize(&m_c2ddescvector[i]);
     }
+}
+
+void Titles::AddGlobalEntry()
+{
+    m_sheet = C2D_SpriteSheetLoadFromMem(icon_t3x, icon_t3x_size);
+    m_globalimg = C2D_SpriteSheetGetImage(m_sheet, 0);
+    m_oktitlesvector.push_back(0);
+    m_images.push_back(m_globalimg);
+    m_descvector.push_back("Global (settings will be applied to all titles.)");
 }

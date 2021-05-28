@@ -16,5 +16,5 @@ namespace Draw
     void DrawMainMenu(LightLock *lock, int *selected, const std::vector<std::string> &options);
     void DrawLoadingScreen(LightLock *lock);
     void DrawConfigScreen(const std::string &data);
-    void DrawTitleInfo(LightLock *lock, const std::vector<std::string> &descs, int *selected);
+    void DrawTitleInfo(LightLock *lock, const std::vector<std::string> &descs, const std::vector<uint64_t> &titles, int *selected);
 };

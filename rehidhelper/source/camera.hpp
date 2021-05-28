@@ -27,7 +27,6 @@ class Camera
         uint16_t *m_buffer;
         C3D_Tex *m_tex;
         C2D_Image m_img;
-        C2D_Image m_globalimg;
         Thread m_thread;
         LightLock m_lock;
         LightLock m_botlock;
@@ -39,5 +38,4 @@ class Camera
         Handle m_finishedevent;
         Titles *m_titles;
         Utils m_utils;
-        C2D_SpriteSheet m_sheet;
 };

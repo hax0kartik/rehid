@@ -18,6 +18,7 @@ void App::DoStuffBeforeMain()
     m_titles.FilterOutTWLAndUpdate();
     m_titles.PopulateSMDHArray();
     m_titles.ConvertSMDHsToC2D();
+    m_titles.AddGlobalEntry();
 }
 
 void App::MainLoop()
