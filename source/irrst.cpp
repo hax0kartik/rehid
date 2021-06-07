@@ -181,7 +181,6 @@ u32 IRU_GetVariablesPA_(u32 *statedirectPA)
     cmdbuf[0] = 0x70040;
 
     if(R_FAILED(ret = svcSendSyncRequest(iruHandle)))return ret;
-    *statedirectPA = cmdbuf[2];
     return cmdbuf[1];
 }
 
@@ -227,8 +226,8 @@ Result iruInit_(unsigned char c)
     ret = IRU_Initialize_();
     if(R_FAILED(ret))goto cleanup1;
 
-    keysdirectPA = IRU_GetVariablesPA_(&statedirectPA);
-    latestKeysPA = (u32*)PA_PTR(keysdirectPA);
+    keysdirectPA = IRU_GetLatestKeysPA_();
+    statedirectPA = IRU_GetStatePA_();
     statePA = (u32*)PA_PTR(statedirectPA);
 
     IRU_Shutdown_();
