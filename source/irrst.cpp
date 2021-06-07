@@ -173,12 +173,12 @@ Result IRU_Initialize_(void)
     return ret;
 }
 
-u32 IRU_GetVariablesPA_(u32 *statedirectPA)
+u32 IRU_GetLatestKeysPA_()
 {
     Result ret = 0;
     u32 *cmdbuf = getThreadCommandBuffer();
 
-    cmdbuf[0] = 0x70040;
+    cmdbuf[0] = IPC_MakeHeader(0x7,0,0); // 0x70000
 
     if(R_FAILED(ret = svcSendSyncRequest(iruHandle)))return ret;
     return cmdbuf[1];
@@ -228,6 +228,7 @@ Result iruInit_(unsigned char c)
 
     keysdirectPA = IRU_GetLatestKeysPA_();
     statedirectPA = IRU_GetStatePA_();
+    latestKeysPA = (u32*)PA_PTR(keysdirectPA);
     statePA = (u32*)PA_PTR(statedirectPA);
 
     IRU_Shutdown_();
