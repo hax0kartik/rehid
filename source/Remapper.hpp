@@ -46,6 +46,7 @@ class Remapper
             m_dodpadtocpad = 0;
             m_docpadtodpad = 0;
             overridecpadpro = 0;
+            m_homebuttonkeys = 0;
         }
         KeyObject m_remapkeyobjects[10]; // Support upto 10 remapable key combos
         KeyAndCoordObject m_remaptouchobjects[10]; // Support upto 10 key > touch binds
@@ -63,6 +64,8 @@ class Remapper
         int16_t m_cpadoveridex = -1;
         int16_t m_cpadoveridey = -1;
         uint32_t m_remaptouchkeys = 0;
+        uint32_t m_homebuttonkeys = 0;
+        uint8_t m_release = 0;
 
     private:
         char *m_filedata;

@@ -201,6 +201,22 @@ uint32_t Remapper::Remap(uint32_t hidstate)
         }
     }
 
+    if(m_homebuttonkeys != 0)
+    {
+        if(m_release == 1)
+        {
+            srvPublishToSubscriber(0x205, 0);
+            m_release = 0;
+        }
+        else if((hidstate & m_homebuttonkeys) == m_homebuttonkeys)
+        {
+            newstate &= ~m_homebuttonkeys;
+            srvPublishToSubscriber(0x204, 0);
+            m_release = 1;
+        }
+
+    }
+
     return newstate;
 }
 
@@ -230,9 +246,7 @@ void Remapper::ParseConfigFile()
 {
     json_value *value = json_parse(m_filedata, m_filedatasize);
     if(value == nullptr) *(u32*)0xF00FFAAB = m_filedata[m_filedatasize - 2];
-    m_touchentries = 0;
-    m_keyentries = 0;
-    m_touchtokeysentries = 0;
+    Reset();
     for(int index = 0; index < (int)value->u.object.length; index++ )
     {
         if(strcasecmp(value->u.object.values[index].name, "keys") == 0)
@@ -323,8 +337,14 @@ void Remapper::ParseConfigFile()
 
         else if(strcasecmp(value->u.object.values[index].name, "overridecpadpro") == 0)
         {
-            json_value *overridecppro = value->u.object.values[index].value; //  OVERRIDE CPAD PRO
+            json_value *overridecppro = value->u.object.values[index].value; // OVERRIDE CPAD PRO
             overridecpadpro = overridecppro->u.boolean & 0xFF;
+        }
+
+        else if(strcasecmp(value->u.object.values[index].name, "homebutton") == 0)
+        {
+            json_value *homebutton = value->u.object.values[index].value; // Homebutton combo
+            m_homebuttonkeys = keystrtokeyval(homebutton->u.string.ptr);
         }
     }
     json_value_free(value);

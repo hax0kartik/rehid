@@ -210,4 +210,5 @@ void Hid::CheckIfIRPatchExists()
         FSFILE_Close(fshandle);
         PTMSYSM_RebootAsync(2e+9);
     }
+   return ;
 }
