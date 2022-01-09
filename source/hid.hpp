@@ -4,6 +4,7 @@
 #include "Pad.hpp"
 #include "Accelerometer.hpp"
 #include "Gyroscope.hpp"
+#include "DebugPad.hpp"
 
 extern "C"
 {
@@ -19,6 +20,7 @@ class Hid
         void InitializePad();
         void InitializeAccelerometer();
         void InitializeGyroscope();
+        void InitializeDebugPad();
         void EnteringSleepMode();
         void ExitingSleepMode();
         void IsShellOpened(bool opened) { m_shellisopen = opened; };
@@ -26,6 +28,7 @@ class Hid
         Touch *GetTouch() { return &m_touch; };
         Accelerometer *GetAccelerometer() { return &m_accel; };
         Gyroscope *GetGyroscope() { return &m_gyro; };
+        DebugPad *GetDebugPad() { return &m_debugpad; };
         Handle *GetSharedMemHandle() { return &m_sharedmemhandle; };
         uint8_t *ExitThread() { return &m_exitthread; };
         LightLock *GetSleepLock() { return &m_sleeplock; };
@@ -40,10 +43,12 @@ class Hid
         TouchRing *m_touchring = nullptr;
         AccelerometerRing *m_accelring = nullptr;
         GyroscopeRing *m_gyroring = nullptr;
+        DebugPadRing *m_debugpadring = nullptr;
         Pad m_pad;
         Touch m_touch;
         Accelerometer m_accel;
         Gyroscope m_gyro;
+        DebugPad m_debugpad;
         bool m_shellisopen = true;
         MyThread m_samplingthread;
         bool m_samplingthreadstarted = false;

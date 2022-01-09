@@ -41,6 +41,7 @@ void Hid::CreateRingsOnSharedmemoryBlock()
     m_touchring = new((void*)((u32)(m_addr) + 0xA8))TouchRing;
     m_accelring = new((void*)((u32)(m_addr) + 0x108))AccelerometerRing;
     m_gyroring = new((void*)((u32)(m_addr) + 0x158))GyroscopeRing;
+    m_debugpadring = new((void*)((u32)(m_addr) + 0x238))DebugPadRing;
 }
 
 void Hid::InitializePad()
@@ -69,6 +70,14 @@ void Hid::InitializeGyroscope()
     m_gyro.SetGyroscopeRing(m_gyroring);
 }
 
+void Hid::InitializeDebugPad()
+{
+    // We should init i2c here, but that will done by InitlaizeGyroscope
+
+    m_debugpad.Initialize();
+    m_debugpad.SetDebugPadRing(m_debugpadring);
+}
+
 static inline bool isServiceUsable(const char *name)
 {
     bool r;
@@ -95,14 +104,15 @@ static void SamplingFunction(void *argv)
     Handle *padtimer = hid->GetPad()->GetTimer();
     Handle *accelintrevent = hid->GetAccelerometer()->GetIntrEvent();
     Handle *gyrointrevent = hid->GetGyroscope()->GetIntrEvent();
+    Handle *debugpadtimer = hid->GetDebugPad()->GetTimer();
     LightLock *lock = hid->GetSleepLock();
     irInit();
     int32_t out;
     while(!*hid->ExitThread())
     {
-        Handle handles[] = {irtimer, *padtimer, *gyrointrevent, *accelintrevent};
+        Handle handles[] = {irtimer, *padtimer, *debugpadtimer, *gyrointrevent, *accelintrevent};
         LightLock_Lock(lock);
-        ret = svcWaitSynchronizationN(&out, handles, 4, false, -1LL);
+        ret = svcWaitSynchronizationN(&out, handles, 5, false, -1LL);
         if(!hid->GetGyroscope()->m_issetupdone && osGetTime() - hid->GetGyroscope()->timeenable > 90 && hid->GetGyroscope()->GetRefCount() > 0)
         {
             hid->GetGyroscope()->SetupForSampling();
@@ -129,11 +139,17 @@ static void SamplingFunction(void *argv)
 
             case 2:
             {
-                hid->GetGyroscope()->Sampling();
+                hid->GetDebugPad()->Sampling();
                 break;
             }
 
             case 3:
+            {
+                hid->GetGyroscope()->Sampling();
+                break;
+            }
+
+            case 4:
             {
                 hid->GetAccelerometer()->Sampling();
                 break;
@@ -153,7 +169,9 @@ void Hid::StartThreadsForSampling()
         m_touchring->Reset();
         m_accelring->Reset();
         m_gyroring->Reset();
+        m_debugpadring->Reset();
         m_pad.SetTimer();
+        m_debugpad.SetTimer();
         m_accel.EnableOrDisableInterrupt();
         m_gyro.EnableSampling();
         m_gyro.timeenable = osGetTime();
@@ -180,7 +198,9 @@ void Hid::ExitingSleepMode()
     m_touchring->Reset();
     m_accelring->Reset();
     m_gyroring->Reset();
+    m_debugpadring->Reset();
     m_pad.SetTimer();
+    m_debugpad.SetTimer();
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
 

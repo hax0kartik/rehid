@@ -148,6 +148,7 @@ int main()
     hid.InitializePad();
     hid.InitializeAccelerometer();
     hid.InitializeGyroscope();
+    hid.InitializeDebugPad();
     hid.StartThreadsForSampling();
 
     const s32 SERVICECOUNT = 4;

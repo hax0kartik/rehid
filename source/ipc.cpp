@@ -83,7 +83,7 @@ void IPC::HandleCommands(Hid *hid)
             cmdbuf[5] = *hid->GetTouch()->GetEvent();
             cmdbuf[6] = *hid->GetAccelerometer()->GetEvent();
             cmdbuf[7] = *hid->GetGyroscope()->GetEvent();
-            cmdbuf[8] = hid->dummyhandles[3];
+            cmdbuf[8] = *hid->GetDebugPad()->GetEvent();
             break;
         }
 

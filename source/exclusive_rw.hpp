@@ -13,3 +13,10 @@ static void inline ExclusiveWrite16(u16 *addr, u16 val)
         __ldrexh(addr);
     while ( __strexh(addr, val));
 }
+
+static void inline ExclusiveWrite8(u8 *addr, u8 val)
+{
+    do
+        __ldrexb(addr);
+    while ( __strexb(addr, val));
+}

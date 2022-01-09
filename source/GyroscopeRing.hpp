@@ -17,14 +17,13 @@ class GyroscopeRing
             Reset();
         };
 
-        void Reset()
-        {
+        void Reset(){
             m_tickcount = -1;
             m_oldtickcount = -1;
             m_updatedindex = -1;
         };
 
-        void SetRaw(GyroscopeEntry entry) {
+        void SetRaw(GyroscopeEntry entry){
             ExclusiveWrite16((u16*)&m_rawentry.x, entry.x);
             ExclusiveWrite16((u16*)&m_rawentry.y, entry.y);
             ExclusiveWrite16((u16*)&m_rawentry.z, entry.z);
