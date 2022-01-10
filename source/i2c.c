@@ -85,7 +85,7 @@ Result I2C_WriteRegisterBuffer(u8 devid, u8 regid, u8 *buffer, size_t buffersize
     cmdbuf[1] = devid;
     cmdbuf[2] = regid;
     cmdbuf[3] = buffersize;
-    cmdbuf[4] = (buffersize << 14) | 2;
+    cmdbuf[4] = (buffersize << 14) | 0x402;
     cmdbuf[5] = (u32)buffer;
 
     if(R_FAILED(ret = svcSendSyncRequest(i2chidHandle)))

@@ -1,6 +1,9 @@
 #include "Pad.hpp"
 #include "printf.h"
 #include "irrst.hpp"
+extern "C"{
+#include "gpio.h"
+}
 extern void _putchar(char character);
 /*
 {
@@ -28,12 +31,21 @@ void Pad::SetTimer()
 }
 
 extern u8 irneeded;
+int usedebugpad = 0;
+extern u32 debugpadkeys;
+extern CirclePadEntry debugpadstick;
 void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry *circlepad, Remapper *remapper)
 {
     volatile uint32_t latest = (vu32)(IOHIDPAD) ^ 0xFFF;
-    m_dummy = 0x4001;
+    
+    uint32_t val = 0;
+    GPIOHID_GetData(0x4001, &val);
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
+    if(val & 0x1) {
+        latest |= debugpadkeys;
+        circlepad = &debugpadstick;
+    }
     latest = m_circlepad.ConvertToHidButtons(circlepad, latest, remapper); // if need be this also sets the circlepad entry to 0
     if(irneeded == 1){
         iruScanInput_();

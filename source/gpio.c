@@ -60,6 +60,20 @@ Result GPIOHID_SetInterruptMask(u32 value, u32 mask)
     return cmdbuf[1];
 }
 
+Result GPIOHID_GetData(u32 mask, u32 *value)
+{
+    Result ret = 0;
+    u32 *cmdbuf = getThreadCommandBuffer();
+    cmdbuf[0] = 0x70040;
+    cmdbuf[1] = mask;
+
+    if(R_FAILED(ret = svcSendSyncRequest(gpioHidHandle)))
+        return ret;
+    
+    *value = cmdbuf[2];
+    return cmdbuf[1];
+}
+
 Result GPIOHID_BindInterrupt(Handle *intr)
 {
     Result ret = 0;

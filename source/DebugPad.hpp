@@ -15,6 +15,10 @@ class DebugPad
     private:
         uint8_t m_isinitialized = 0;
         uint16_t m_latestkeys = 0;
+        uint8_t m_leftxorigin = 0;
+        uint8_t m_leftyorigin = 0;
+        uint8_t m_rightxorigin = 0;
+        uint8_t m_rightyorigin = 0;
         Handle m_timer;
         Handle m_event;
         DebugPadRing *m_ring = nullptr;
