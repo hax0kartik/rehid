@@ -145,10 +145,11 @@ void DebugPad::Initialize()
 
 u32 debugpadkeys = 0;
 CirclePadEntry debugpadstick;
+int pushed = 0;
 void DebugPad::Sampling()
 {
     if(!m_isinitialized) return;
-
+    
     DebugPadEntry entry;
     if(!ReadEntry(&entry)){
         /* some logic */
@@ -160,6 +161,7 @@ void DebugPad::Sampling()
     debugpadstick.y = map(entry.leftsticky, -32, 31, -180, 180);
 
     if(m_writetoring){
+        pushed = 1;
         m_ring->WriteToRing(&m_oldentry);
         m_oldentry = entry;
     }

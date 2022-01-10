@@ -31,7 +31,6 @@ void Pad::SetTimer()
 }
 
 extern u8 irneeded;
-int usedebugpad = 0;
 extern u32 debugpadkeys;
 extern CirclePadEntry debugpadstick;
 void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry *circlepad, Remapper *remapper)
@@ -44,7 +43,8 @@ void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry *circlepad, 
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
     if(val & 0x1) {
         latest |= debugpadkeys;
-        circlepad = &debugpadstick;
+        circlepad->x = debugpadstick.x;
+        circlepad->y = debugpadstick.y;
     }
     latest = m_circlepad.ConvertToHidButtons(circlepad, latest, remapper); // if need be this also sets the circlepad entry to 0
     if(irneeded == 1){
