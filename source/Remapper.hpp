@@ -1,6 +1,7 @@
 #pragma once
 #include <3ds.h>
 #include "irrst.hpp"
+#include "CirclePad.hpp"
 
 struct KeyObject
 {
@@ -35,6 +36,7 @@ class Remapper
     public:
         void GenerateFileLocation();
         uint32_t Remap(uint32_t hidtstate);
+        uint32_t CirclePadRemap(uint32_t hidstate, CirclePadEntry *circlepad);
         Result ReadConfigFile();
         void ParseConfigFile();
         void Reset()

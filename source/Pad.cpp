@@ -41,18 +41,21 @@ void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry *circlepad, 
     GPIOHID_GetData(0x4001, &val);
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
+    /*
     if(val & 0x1) {
         latest |= debugpadkeys;
         circlepad->x = debugpadstick.x;
         circlepad->y = debugpadstick.y;
     }
-    latest = m_circlepad.ConvertToHidButtons(circlepad, latest, remapper); // if need be this also sets the circlepad entry to 0
+    */
+    latest = m_circlepad.ConvertToHidButtons(circlepad, latest); // if need be this also sets the circlepad entry to 0
     if(irneeded == 1){
         iruScanInput_();
         m_rawkeys = iruKeysHeld_();
     }
     latest = latest | m_rawkeys | remapper->m_remaptouchkeys;
     latest = remapper->Remap(latest);
+    latest = remapper->CirclePadRemap(latest, circlepad);
     entry->pressedpadstate = (latest ^ m_latestkeys) & ~m_latestkeys;
     entry->releasedpadstate = (latest ^ m_latestkeys) & m_latestkeys;
     entry->currpadstate = latest;

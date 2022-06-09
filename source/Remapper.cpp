@@ -188,19 +188,6 @@ uint32_t Remapper::Remap(uint32_t hidstate)
         }
     }
 
-    m_cpadoveridex = -1;
-    m_cpadoveridey = -1;
-
-    for(int i = 0; i < m_cpadentries; i++)
-    {
-        if((hidstate & m_remapcpadobjects[i].key) == m_remapcpadobjects[i].key)
-        {
-            newstate &= ~m_remapcpadobjects[i].key;
-            m_cpadoveridex = m_remapcpadobjects[i].x;
-            m_cpadoveridey = m_remapcpadobjects[i].y;
-        }
-    }
-
     if(m_homebuttonkeys != 0)
     {
         if(m_release == 1)
@@ -216,10 +203,84 @@ uint32_t Remapper::Remap(uint32_t hidstate)
         }
 
     }
-
     return newstate;
 }
 
+uint32_t Remapper::CirclePadRemap(uint32_t hidstate, CirclePadEntry *circlepad){
+    /*
+        Following cases seem to be the most popular:-
+        Output=Input
+        1) Cpad=Dpad Dpad=0
+        2) Dpad=Cpad Cpad=0
+        3) Dpad=Cpad Cpad=Dpad
+    */
+    CirclePadEntry newentry;
+    newentry.x = circlepad->x; newentry.y = circlepad->y;
+    uint32_t newstate = hidstate;
+    if(m_docpadtodpad){
+        if(hidstate & KEY_CPAD_UP){
+            newstate &= ~KEY_CPAD_UP;
+            newstate |= KEY_DUP;
+        }
+       
+        else if(hidstate & KEY_CPAD_DOWN){
+            newstate &= ~KEY_CPAD_DOWN;
+            newstate |= KEY_DDOWN;
+        }
+
+        if(hidstate & KEY_CPAD_LEFT){
+            newstate &= ~KEY_CPAD_LEFT;
+            newstate |= KEY_DLEFT;
+        }
+
+        else if(hidstate & KEY_CPAD_RIGHT){
+            newstate &= ~KEY_CPAD_RIGHT;
+            newstate |= KEY_DRIGHT;
+        }
+        newentry.x = 0; newentry.y = 0;
+   }
+
+    if(m_dodpadtocpad){
+        if(hidstate & KEY_DLEFT){
+            if(m_docpadtodpad && ((hidstate & KEY_CPAD_LEFT) == 0))
+                newstate &= ~KEY_DLEFT;
+            newstate |= KEY_CPAD_LEFT;
+            newentry.x = -190; newentry.y = 0;
+        }
+
+        else if(hidstate & KEY_DRIGHT){
+            if(m_docpadtodpad && ((hidstate & KEY_CPAD_RIGHT) == 0))
+                newstate &= ~KEY_DRIGHT;
+            newstate |= KEY_CPAD_RIGHT;
+            newentry.x = 190; newentry.y = 0;
+        }
+
+        if(hidstate & KEY_DDOWN){
+            if(m_docpadtodpad && ((hidstate & KEY_CPAD_DOWN) == 0))
+                newstate &= ~KEY_DDOWN;
+            newstate |= KEY_CPAD_DOWN;
+            newentry.y = -190;
+        }
+
+        else if(hidstate & KEY_DUP){
+            if(m_docpadtodpad && ((hidstate & KEY_CPAD_UP) == 0))
+                newstate &= ~KEY_DUP;
+            newstate |= KEY_CPAD_UP;
+            newentry.y = 190;
+        }
+    }
+
+    for(int i = 0; i < m_cpadentries; i++){
+        if((hidstate & m_remapcpadobjects[i].key) == m_remapcpadobjects[i].key){
+            newstate &= ~m_remapcpadobjects[i].key;
+            newentry.x = m_remapcpadobjects[i].x;
+            newentry.y = m_remapcpadobjects[i].y;
+        }
+    }
+
+   circlepad->x = newentry.x; circlepad->y = newentry.y;
+   return newstate;
+}
 Result Remapper::ReadConfigFile()
 {
     Handle fshandle;

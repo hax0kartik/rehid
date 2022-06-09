@@ -105,25 +105,12 @@ void CirclePad::AdjustValues(int16_t *adjustedx, int16_t *adjustedy, int rawx, i
   }
 }
 
-uint32_t CirclePad::ConvertToHidButtons(CirclePadEntry *circlepad, uint32_t buttons, Remapper *remapper)
+uint32_t CirclePad::ConvertToHidButtons(CirclePadEntry *circlepad, uint32_t buttons)
 {
     int32_t tanybyx = 0, tanxbyy = 0;
     CirclePadEntry adjusted;
     buttons = buttons & 0xFFFFFFF;
     u32 left = KEY_CPAD_LEFT, right = KEY_CPAD_RIGHT, up = KEY_CPAD_UP, down = KEY_CPAD_DOWN;
-    if(remapper->m_cpadoveridex !=-1 && remapper->m_cpadoveridey != -1)
-    {
-        circlepad->x = remapper->m_cpadoveridex;
-        circlepad->y = remapper->m_cpadoveridey;
-    }
-    
-    if(remapper->m_docpadtodpad)
-    {
-        left = KEY_DLEFT;
-        right = KEY_DRIGHT;
-        up = KEY_DUP;
-        down = KEY_DDOWN;
-    }
     AdjustValues(&adjusted.x, &adjusted.y, circlepad->x, circlepad->y, 40, 145);
     if(adjusted.x)
         tanybyx = (adjusted.y << 8) / adjusted.x;
@@ -138,37 +125,5 @@ uint32_t CirclePad::ConvertToHidButtons(CirclePadEntry *circlepad, uint32_t butt
         buttons |= up;
     else if(0 > adjusted.y && -443 <= tanxbyy && 443 >= tanxbyy)
         buttons |= down;
-
-    if(remapper->m_docpadtodpad)
-    {
-        circlepad->x = 0;
-        circlepad->y = 0;
-    }
-    
-    else if(remapper->m_dodpadtocpad)
-    {
-        if(buttons & KEY_DLEFT)
-        {
-            circlepad->x = -190;
-            circlepad->y = 0;
-        }
-
-        else if(buttons & KEY_DRIGHT)
-        {
-            circlepad->x = 190;
-            circlepad->y = 0;
-        }
-
-        if(buttons & KEY_DUP)
-        {
-            circlepad->y = 190;
-        }
-
-        else if(buttons & KEY_DDOWN)
-        {
-            circlepad->y = -190;
-        }
-    }
-
     return buttons;
 }
