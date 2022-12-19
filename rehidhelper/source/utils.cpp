@@ -20,10 +20,7 @@ void Utils::DownloadAndExtractLatestReleaseZip()
     fclose(f);
     picounzip::unzip zip("/download.zip");
     zip.extractall("/luma/titles/");
-    LumaConfig config;
-    config.ReadConfig();
-    config.EnableGamePatching();
-    config.WriteConfig();
+    LumaConfig::EnableGamePatching();
 }
 
 void Utils::CreateRehidJson(u64 tid, bool global, const std::string &data)

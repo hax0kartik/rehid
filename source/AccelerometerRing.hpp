@@ -25,9 +25,9 @@ class AccelerometerRing
         };
 
         void SetRaw(AccelerometerEntry entry) {
-            ExclusiveWrite16((u16*)&m_rawentry.x, entry.x);
-            ExclusiveWrite16((u16*)&m_rawentry.y, entry.y);
-            ExclusiveWrite16((u16*)&m_rawentry.z, entry.z);
+            ExclusiveWrite((u16*)&m_rawentry.x, entry.x);
+            ExclusiveWrite((u16*)&m_rawentry.y, entry.y);
+            ExclusiveWrite((u16*)&m_rawentry.z, entry.z);
         }
 
         void WriteToRing(AccelerometerEntry entry);

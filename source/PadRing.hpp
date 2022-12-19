@@ -24,9 +24,9 @@ class PadRing
         }
         void SetCurrPadState(uint32_t state, CirclePadEntry circlepadentry)
         {
-            ExclusiveWrite16((u16*)&m_circlepadraw.x, circlepadentry.x);
-            ExclusiveWrite16((u16*)&m_circlepadraw.y, circlepadentry.y);
-            ExclusiveWrite32((s32*)&m_curpadstate, state);
+            ExclusiveWrite((u16*)&m_circlepadraw.x, circlepadentry.x);
+            ExclusiveWrite((u16*)&m_circlepadraw.y, circlepadentry.y);
+            ExclusiveWrite((s32*)&m_curpadstate, state);
         }
         void Set3dSliderVal(float val){
             m_3dsliderval = val;

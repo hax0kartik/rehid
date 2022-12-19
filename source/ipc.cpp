@@ -195,5 +195,18 @@ void IPC::HandleCommands(Hid *hid)
             cmdbuf[1] = 0;
             break;
         }
+
+        case 0x19: // Special rehid IPC command
+        {
+            cmdbuf[0] = 0x190040;
+            cmdbuf[1] = 0;
+            break;
+        }
+
+        default:
+        {
+            cmdbuf[1] = 0xD900182F; 
+            break;
+        }
     }
 }

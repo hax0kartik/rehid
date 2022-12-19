@@ -32,9 +32,9 @@ CFLAGS	:=  -Wall -O2 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections -fdata-sections \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS	+=	$(INCLUDE) -D__3DS__
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=c++20
 ASFLAGS	:=	$(ARCH)
 LDFLAGS	=	-specs=3dsx.specs $(ARCH) -Wl,-Map,$(notdir $*.map)
 

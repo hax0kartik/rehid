@@ -22,8 +22,8 @@ class TouchRing
             m_updatedindex = -1;
         };
         void SetRaw(TouchEntry entry) {
-            ExclusiveWrite16((u16*)&m_rawentry.x, entry.x);
-            ExclusiveWrite16((u16*)&m_rawentry.y, entry.y);
+            ExclusiveWrite((u16*)&m_rawentry.x, entry.x);
+            ExclusiveWrite((u16*)&m_rawentry.y, entry.y);
             m_rawentry.touch = entry.touch;
         }
         void WriteToRing(TouchEntry entry);
