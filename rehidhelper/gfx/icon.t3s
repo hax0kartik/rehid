@@ -1,2 +1,3 @@
--f auto-etc1 -z auto
+-f auto-etc1 -z auto --atlas
+icon.png
 global.png

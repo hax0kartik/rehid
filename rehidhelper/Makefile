@@ -33,18 +33,20 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET			:=	$(notdir $(CURDIR))
 BUILD			:=	build
-SOURCES			:=	source source/quirc
+SOURCES			:=	source source/States source/Utils source/quirc
 DATA			:=	data
 INCLUDES		:=	include
-GRAPHICS		:=	gfx
-GFXBUILD		:=	$(BUILD)
+GRAPHICS		:=	gfx gfx/images_t3s
 ROMFS			:=	romfs
-#GFXBUILD		:=	$(ROMFS)/gfx
+GFXBUILD		:=	sdmc
 
-APP_TITLE		:=	Rehid Helper
+APP_TITLE		:=	Rehid-Helper
 APP_DESCRIPTION	:=	Helper for downloading remappings
-APP_AUTHOR		:=	hax0kartik
-#ICON			:=	
+APP_AUTHOR		:=	Hax0kartik
+ICON			:=	cia/icon_app.png
+BANNER			:=	cia/banner.png
+AUDIO			:=	cia/audio.cwav
+CIA_RSF			:=	cia/rehidhelper.rsf
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -55,9 +57,9 @@ CFLAGS	:=	-g -Wall -O2 -mword-relocations \
 			-ffunction-sections \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS	+=	$(INCLUDE) -D__3DS__
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++17
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++20
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
@@ -163,7 +165,7 @@ ifneq ($(ROMFS),)
 	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
 endif
 
-.PHONY: all clean
+.PHONY: all clean cia
 
 #---------------------------------------------------------------------------------
 all: $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
@@ -191,11 +193,25 @@ clean:
 $(GFXBUILD)/%.t3x	$(BUILD)/%.h	:	%.t3s
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
-	@tex3ds -i $< -H $(BUILD)/$*.h -d $(DEPSDIR)/$*.d -o $(GFXBUILD)/$*.t3x
+	@tex3ds -i $< -H $(BUILD)/$*.h -o $(GFXBUILD)/$*.t3x
 
 #---------------------------------------------------------------------------------
-else
+$(BUILD)/icon.icn : $(ICON)
+	@bannertool makesmdh -i $(ICON) -s $(APP_TITLE) -l $(APP_DESCRIPTION) -p $(APP_AUTHOR) -o $(BUILD)/icon.icn
 
+$(BUILD)/banner.bnr : $(BANNER) $(AUDIO)
+	@bannertool makebanner -i $(BANNER) -ca $(AUDIO) -o $(BUILD)/banner.bnr
+
+$(BUILD)/romfs.bin :
+	@3dstool -ctf romfs $(BUILD)/romfs.bin --romfs-dir romfs
+
+cia: $(BUILD) $(BUILD)/icon.icn $(BUILD)/banner.bnr $(BUILD)/romfs.bin $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
+	@echo Generating cia
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@makerom -f cia -o $(TARGET).cia -target t -elf $(TARGET).elf -icon $(BUILD)/icon.icn -banner $(BUILD)/banner.bnr -rsf $(CIA_RSF) -romfs $(BUILD)/romfs.bin
+	@echo built ... $(TARGET).cia
+
+else
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
@@ -209,14 +225,6 @@ $(OUTPUT).elf	:	$(OFILES)
 # you need a rule like this for each extension you use as binary data
 #---------------------------------------------------------------------------------
 %.bin.o	%_bin.h :	%.bin
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
-
-#---------------------------------------------------------------------------------
-.PRECIOUS	:	%.t3x
-#---------------------------------------------------------------------------------
-%.t3x.o	%_t3x.h :	%.t3x
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)
@@ -246,12 +254,6 @@ endef
 %.shbin.o %_shbin.h : %.shlist
 	@echo $(notdir $<)
 	@$(call shader-as,$(foreach file,$(shell cat $<),$(dir $<)$(file)))
-
-#---------------------------------------------------------------------------------
-%.t3x	%.h	:	%.t3s
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@tex3ds -i $< -H $*.h -d $*.d -o $*.t3x
 
 -include $(DEPSDIR)/*.d
 

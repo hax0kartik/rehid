@@ -286,10 +286,12 @@ Result Remapper::ReadConfigFile()
     Handle fshandle;
    // char globalfileloc[] = "/rehid.json";
     Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, m_fileloc), FS_OPEN_READ, 0);
+    m_isglobal = false;
     if(ret) // Bindings for title not found, check if global profile is present
     {
         ret =  FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/rehid/rehid.json"), FS_OPEN_READ, 0);
         if(ret) return -1; // global profile not found, do not appply any settings.
+        m_isglobal = true;
     }
 
     ret = FSFILE_GetSize(fshandle, &m_filedatasize);
@@ -306,7 +308,12 @@ Result Remapper::ReadConfigFile()
 void Remapper::ParseConfigFile()
 {
     json_value *value = json_parse(m_filedata, m_filedatasize);
-    if(value == nullptr) *(u32*)0xF00FFAAB = m_filedata[m_filedatasize - 2];
+    if(value == nullptr) {
+        if(!m_isglobal)
+            ERRF_ThrowResultWithMessage(-1, "Failed to parse rehid.json file.");
+        else
+            return; // fail silently.
+    }
     Reset();
     for(int index = 0; index < (int)value->u.object.length; index++ )
     {

@@ -73,4 +73,5 @@ class Remapper
         char *m_filedata;
         uint64_t m_filedatasize;
         char m_fileloc[40];
+        bool m_isglobal = false;
 };
