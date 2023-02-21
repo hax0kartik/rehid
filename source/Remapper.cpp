@@ -162,8 +162,9 @@ void Remapper::GenerateFileLocation()
 
 extern char data[0x100];
 
-uint32_t Remapper::Remap(uint32_t hidstate)
+uint32_t Remapper::Remap(uint32_t hidstate, uint32_t newpressedkeys)
 {
+    char buf[50];
     uint32_t newstate = hidstate;
 
     for(int i = 0; i < m_keyentries; i++)
@@ -186,6 +187,25 @@ uint32_t Remapper::Remap(uint32_t hidstate)
             m_touchoveridex = m_remaptouchobjects[i].x;
             m_touchoveridey = m_remaptouchobjects[i].y;
         }
+    }
+
+    for(int i = 0; i < m_turboentries; i++)
+    {
+        if((newpressedkeys & m_remapturboobjects[i].onkey) == m_remapturboobjects[i].onkey)
+        {
+            newstate &= ~m_remapturboobjects[i].onkey;
+            m_remapturboobjects[i].state = !m_remapturboobjects[i].state;
+            m_remapturboobjects[i].frames = 0;
+            //int len = sprintf_(buf, "Key Pressed, i: %d\n", i);
+            //svcOutputDebugString(buf, len);
+        }
+
+        if(m_remapturboobjects[i].state && (m_remapturboobjects[i].frames >= m_remapturboobjects[i].framedelay))
+        {
+            newstate = newstate ^ m_remapturboobjects[i].newkey;
+            m_remapturboobjects[i].frames = 0;
+        } else if(m_remapturboobjects[i].state)
+            m_remapturboobjects[i].frames++;
     }
 
     if(m_homebuttonkeys != 0)
@@ -325,8 +345,8 @@ void Remapper::ParseConfigFile()
             for(int i = 0; i < length; i++)
             {
                 // Process key objects
-                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
-                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
+                json_object_entry *getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry *presskey = getremapkey(arr->u.array.values[i], "press");
                 if (getkey != nullptr && presskey != nullptr) {
                     // pointers are not null, matches found
                     m_remapkeyobjects[i].newkey = keystrtokeyval(getkey->value->u.string.ptr);
@@ -342,8 +362,8 @@ void Remapper::ParseConfigFile()
             m_touchentries = length;
             for(int i = 0; i < length; i++)
             {
-                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
-                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
+                json_object_entry *getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry *presskey = getremapkey(arr->u.array.values[i], "press");
                 if (getkey != nullptr && presskey != nullptr) {
                     // pointers are not null, matches found
                     m_remaptouchobjects[i].x = getkey->value->u.array.values[0]->u.integer;
@@ -360,8 +380,8 @@ void Remapper::ParseConfigFile()
             m_touchtokeysentries = length;
             for(int i = 0; i < length; i++)
             {
-                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
-                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
+                json_object_entry *getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry *presskey = getremapkey(arr->u.array.values[i], "press");
                 if (getkey != nullptr && presskey != nullptr) {
                     // pointers are not null, matches found
                     m_remaptouchtokeysobjects[i].x = presskey->value->u.array.values[0]->u.integer;
@@ -380,13 +400,34 @@ void Remapper::ParseConfigFile()
             m_cpadentries = length;
             for(int i = 0; i < length; i++)
             {
-                json_object_entry * getkey = getremapkey(arr->u.array.values[i], "get");
-                json_object_entry * presskey = getremapkey(arr->u.array.values[i], "press");
+                json_object_entry *getkey = getremapkey(arr->u.array.values[i], "get");
+                json_object_entry *presskey = getremapkey(arr->u.array.values[i], "press");
                 if (getkey != nullptr && presskey != nullptr) {
                     // pointers are not null, matches found
                     m_remapcpadobjects[i].x = getkey->value->u.array.values[0]->u.integer;
                     m_remapcpadobjects[i].y = getkey->value->u.array.values[1]->u.integer;
                     m_remapcpadobjects[i].key = keystrtokeyval(presskey->value->u.string.ptr);
+                }
+            }
+        }
+
+        else if(strcasecmp(value->u.object.values[index].name, "turbo") == 0)
+        {
+            int length = value->u.object.values[index].value->u.array.length; // size of turbo entries
+            json_value *arr = value->u.object.values[index].value; // turbo
+            m_turboentries = length;
+            for(int i = 0; i < length; i++)
+            {
+                m_remapturboobjects[i].state = 0; 
+                m_remapturboobjects[i].frames = 0;
+                for(int j = 0; j < arr->u.array.values[i]->u.object.length; j++) {
+                    if(strcasecmp(arr->u.array.values[i]->u.object.values[j].name, "framedelay") == 0) {
+                        m_remapturboobjects[i].framedelay = arr->u.array.values[i]->u.object.values[j].value->u.integer;
+                    } else if(strcasecmp(arr->u.array.values[i]->u.object.values[j].name, "get") == 0) {
+                        m_remapturboobjects[i].newkey = keystrtokeyval(arr->u.array.values[i]->u.object.values[j].value->u.string.ptr);
+                    } else if(strcasecmp(arr->u.array.values[i]->u.object.values[j].name, "press") == 0) {
+                        m_remapturboobjects[i].onkey = keystrtokeyval(arr->u.array.values[i]->u.object.values[j].value->u.string.ptr);
+                    }
                 }
             }
         }

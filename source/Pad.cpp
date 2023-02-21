@@ -54,7 +54,7 @@ void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry *circlepad, 
         m_rawkeys = iruKeysHeld_();
     }
     latest = latest | m_rawkeys | remapper->m_remaptouchkeys;
-    latest = remapper->Remap(latest);
+    latest = remapper->Remap(latest, (latest ^ m_latestkeys) & m_latestkeys);
     latest = remapper->CirclePadRemap(latest, circlepad);
     entry->pressedpadstate = (latest ^ m_latestkeys) & ~m_latestkeys;
     entry->releasedpadstate = (latest ^ m_latestkeys) & m_latestkeys;
