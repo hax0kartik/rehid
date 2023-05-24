@@ -1,4 +1,5 @@
 #include "ipc.hpp"
+#include "mcuhid.hpp"
 
 void IPC::HandleCommands(Hid *hid)
 {
@@ -148,6 +149,9 @@ void IPC::HandleCommands(Hid *hid)
         case 0x13:
         {
             hid->GetGyroscope()->IncreementHandleIndex();
+            if(hid->GetGyroscope()->GetRefCount() > 0 && !hid->GetGyroscope()->IsEnabled()) {
+                hid->GetGyroscope()->EnableSampling();
+            }
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;
@@ -183,9 +187,10 @@ void IPC::HandleCommands(Hid *hid)
 
         case 0x17:
         {
+            uint8_t vol;
             cmdbuf[0] = 0x170080;
-            cmdbuf[1] = 0;
-            cmdbuf[2] = 0;
+            cmdbuf[1] = mcuHidGetSoundVolume(&vol);
+            cmdbuf[2] = vol;
             break;
         }
 
@@ -205,7 +210,7 @@ void IPC::HandleCommands(Hid *hid)
 
         default:
         {
-            cmdbuf[1] = 0xD900182F; 
+            cmdbuf[1] = 0xD900182F;
             break;
         }
     }

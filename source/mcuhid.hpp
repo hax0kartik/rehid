@@ -9,4 +9,5 @@ Result mcuHidGetAccelerometerEventHandle(Handle *handle);
 Result mcuHidEnableAccelerometerInterrupt(u8 enable);
 Result mcuHidEnableAccelerometer(u8 enable);
 Result mcuHidReadAccelerometerValues(AccelerometerEntry *entry);
+Result mcuHidGetSoundVolume(uint8_t *volume);
 Result mcuHidGetEventReason(uint32_t *reason);

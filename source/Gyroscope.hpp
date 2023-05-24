@@ -43,6 +43,7 @@ class Gyroscope
         void IncreementHandleIndex() { ++m_refcount; };
         void DecreementhandleIndex() { --m_refcount; };
         uint8_t GetRefCount() { return m_refcount; };
+        bool IsEnabled() { return m_enabled; };
         void EnableSampling();
         void DisableSampling();
         void SetupForSampling();
@@ -57,8 +58,9 @@ class Gyroscope
         GyroscopeRing *m_ring = nullptr;
         Handle m_event[6];
         Handle m_intrevent;
-        uint8_t m_refcount = 0; 
+        uint8_t m_refcount = 0;
         uint8_t m_initialized = 0;
+        bool m_enabled = false;
         GyroscopeInternalStruct m_internalstruct = { 0 };
         GyroscopeRegs m_gyroregs[2] = {
             {.sampleratedivider = 0x15, .dlpf = 0x16, .fssel = 0, .interruptconfig = 0x17, .gyroxout = 0x1D, .powermgm = 0x3E},

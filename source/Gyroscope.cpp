@@ -21,6 +21,7 @@ void Gyroscope::DisableSampling()
         I2C_EnableRegisterBits8(m_internalstruct.devid, m_gyroregs[variant].powermgm, variant | 64); // Enable Sleep
     }
     m_internalstruct.sleeping = 1;
+    m_enabled = false;
 }
 
 void Gyroscope::SetSamplingRate(uint8_t samplingrate)
@@ -63,6 +64,8 @@ void Gyroscope::EnableSampling()
         I2C_EnableRegisterBits8(m_internalstruct.devid, 32, 8);
     else
         I2C_DisableRegisterBits8(m_internalstruct.devid, m_gyroregs[m_internalstruct.variant].powermgm, 64); // Disable Sleep
+
+    m_enabled = true;
 }
 
 Result Gyroscope::InternalInit()
@@ -96,7 +99,7 @@ Result Gyroscope::InternalInit()
         svcSleepThread(4 * 1000 * 1000);
         m_internalstruct.sleeping = 0;
         m_internalstruct.sampling = 1;
-        // By default we disable/sleep so as to ensure that gyroscope does not run at all times and battery is saved 
+        // By default we disable/sleep so as to ensure that gyroscope does not run at all times and battery is saved
         DisableSampling();
     }
     return ret;

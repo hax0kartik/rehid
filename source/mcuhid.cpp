@@ -64,6 +64,16 @@ Result mcuHidGetEventReason(uint32_t *reason)
     return cmdbuf[1];
 }
 
+Result mcuHidGetSoundVolume(uint8_t *volume)
+{
+    u32 *cmdbuf = getThreadCommandBuffer();
+    cmdbuf[0] = 0xE0000;
+    Result ret = svcSendSyncRequest(mcuHidHandle);
+    if(R_FAILED(ret)) return ret;
+    *volume = cmdbuf[2] & 0xFF;
+    return cmdbuf[1];
+}
+
 Result mcuHidEnableAccelerometerInterrupt(u8 enable)
 {
     u32 *cmdbuf = getThreadCommandBuffer();
