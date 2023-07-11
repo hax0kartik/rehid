@@ -14,7 +14,7 @@ extern "C" {
 #define OS_INVALID_IPC_PARAMATER MAKERESULT(RL_PERMANENT, RS_WRONGARG, RM_OS, 48)
 
 extern u8 irneeded;
-extern int irrstRefCount; 
+extern int irrstRefCount;
 static Result HandleNotifications(Hid *hid, int *exit)
 {
     uint32_t notid = 0;
@@ -67,7 +67,8 @@ static Result HandleNotifications(Hid *hid, int *exit)
 
         case 0x110: // Application terminated
         {
-            hid->GetRemapperObject()->Reset();
+            if(!hid->GetRemapperObject()->isGlobal())
+                hid->GetRemapperObject()->Reset();
             break;
         }
 
@@ -98,7 +99,7 @@ extern "C"
         srvSysInit();
         fsSysInit();
         Result ret = mcuHidInit();
-        if(ret != 0) *(u32*)ret = 0xFFAA; 
+        if(ret != 0) *(u32*)ret = 0xFFAA;
         //gdbHioDevInit();
         //gdbHioDevRedirectStdStreams(false, true, false);
         ptmSysmInit();
@@ -136,7 +137,7 @@ extern "C"
 }
 
 int main()
-{   
+{
     Hid hid;
     IPC ipc;
 

@@ -11,9 +11,9 @@ struct KeyObject
 
 struct KeyAndCoordObject
 {
-    uint32_t key; 
+    uint32_t key;
     uint16_t x;
-    uint16_t y; 
+    uint16_t y;
 };
 
 struct KeyAndBoundingBoxObject
@@ -60,6 +60,7 @@ class Remapper
             overridecpadpro = 0;
             m_homebuttonkeys = 0;
         }
+        const bool isGlobal() const { return m_isglobal; };
         KeyObject m_remapkeyobjects[10]; // Support upto 10 remapable key combos
         KeyAndCoordObject m_remaptouchobjects[10]; // Support upto 10 key > touch binds
         KeyAndCoordObject m_remapcpadobjects[10]; // support upto 10 key > cpad binds
