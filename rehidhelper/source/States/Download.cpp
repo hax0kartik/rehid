@@ -37,7 +37,7 @@ void Download::OnStateEnter(App *app){
         auto& downloadmanager = app->GetDownloadManager();
         auto& jsonmanager = app->GetJsonManager();
         std::vector<uint8_t> tmp;
-        downloadmanager.GetUrl("https://api.github.com/repos/hax0kartik/test/releases/latest", tmp);
+        downloadmanager.GetUrl("https://api.github.com/repos/hax0kartik/rehid/releases/latest", tmp);
         auto url = jsonmanager.ParseAndGetLatest(tmp);
         downloadmanager.DownloadTo(url, "/luma/sysmodules", "0004013000001D02.cxi");
         Utils::Misc::EnableGamePatching();
