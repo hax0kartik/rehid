@@ -13,8 +13,7 @@ namespace Utils{
             void Intialize();
             int GetUrl(const std::string &url, std::vector<uint8_t> &data, bool write_to_file = false, FILE *f = nullptr);
             void DownloadAndUnzipTo(const std::string &url, const std::string &location);
-            void DownloadAmiibosJson();
-            void DownloadGamesIDJson();
+            void DownloadTo(const std::string &url, const std::string &location, const std::string &filename);
         private:
             CURL *m_handle;
             std::string m_url;

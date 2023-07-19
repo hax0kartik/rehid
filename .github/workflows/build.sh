@@ -18,3 +18,5 @@ chmod +x /usr/bin/makerom && chmod +x /usr/bin/ctrtool
 
 #Build rehid
 make clean && make -j2
+mkdir 0004013000001D02
+mv 0004013000001D02.cxi 0004013000001D02/0004013000001D02.cxi

@@ -23,11 +23,11 @@ void Hid::CreateAndMapMemoryBlock()
         if(m_addr)
         {
             ret = svcMapMemoryBlock(m_sharedmemhandle, (u32)m_addr, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), MEMPERM_DONTCARE);
-            if(ret != 0) 
+            if(ret != 0)
                 *(u32*)ret = (u32)m_addr;
         }
         else svcBreak(USERBREAK_ASSERT);
-        
+
     }
     else svcBreak(USERBREAK_ASSERT);
     svcCreateEvent(&dummyhandles[2], RESET_STICKY);
@@ -156,7 +156,7 @@ static void SamplingFunction(void *argv)
             }
         }
         if(ret > 0) svcBreak(USERBREAK_ASSERT);
-        
+
         LightLock_Unlock(lock);
     }
 }
@@ -206,7 +206,7 @@ void Hid::ExitingSleepMode()
 
 void Hid::RemapGenFileLoc()
 {
-    m_remapper.GenerateFileLocation(); 
+    m_remapper.GenerateFileLocation();
     Result ret = m_remapper.ReadConfigFile();
         if(ret == -1) return;
         else if(ret) *(u32*)ret = 0xF00FBABE;
@@ -216,14 +216,12 @@ void Hid::RemapGenFileLoc()
 void Hid::CheckIfIRPatchExists()
 {
     Handle fshandle;
-    Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/luma/titles/0004013000003302/code.ips"), FS_OPEN_READ, 0);
+    Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/luma/sysmodules/0004013000003302.ips"), FS_OPEN_READ, 0);
     if(ret) // Does not exist
     {
         u64 archivesd;
         FSUSER_OpenArchive(&archivesd, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
-        ret = FSUSER_CreateDirectory(archivesd, fsMakePath(PATH_ASCII, "/luma/titles/0004013000003302/"), FS_ATTRIBUTE_DIRECTORY);
-        if(R_FAILED(ret)) *(u32*)0xF009F008 = ret; // Shouldn't have happened
-        ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/luma/titles/0004013000003302/code.ips"), FS_OPEN_WRITE | FS_OPEN_CREATE, 0);
+        ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/luma/sysmodules/0004013000003302.ips"), FS_OPEN_WRITE | FS_OPEN_CREATE, 0);
         if(R_FAILED(ret)) *(u32*)0xF009F009 = ret; // Shouldn't have happened
         ret = FSFILE_Write(fshandle, nullptr, 0, code_ips, code_ips_size, 0);
         if(R_FAILED(ret)) *(u32*)0xf009f010 = ret; // Neither this should happen

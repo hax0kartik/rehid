@@ -46,34 +46,28 @@ int Utils::DownloadManager::GetUrl(const std::string &url, std::vector<uint8_t> 
     return res;
 }
 
-
 void Utils::DownloadManager::DownloadAndUnzipTo(const std::string &url, const std::string &location){
     std::vector<uint8_t> data;
-    mkdir("/3ds/wumiibo", 0777);
+    mkdir("/3ds/rehid", 0777);
 
-    FILE *file = fopen("/3ds/wumiibo/download.zip", "wb+");
+    FILE *file = fopen("/3ds/rehid/download.zip", "wb+");
     if(file){
         GetUrl(url, data, true, file);
     }
     fclose(file);
-    picounzip::unzip zip("/3ds/wumiibo/download.zip");
+    picounzip::unzip zip("/3ds/rehid/download.zip");
     zip.extractall(location);
 }
 
-void Utils::DownloadManager::DownloadAmiibosJson(){
-    std::vector<uint8_t> tmp;
-    GetUrl("https://raw.githubusercontent.com/hax0kartik/wumiibo/master/jsons/amiibos.json", tmp);
-    mkdir("/3ds/wumiibo", 0777); // if fails ignore
-    FILE *f = fopen("/3ds/wumiibo/amiibos.json", "wb+");
-    fwrite(tmp.data(), tmp.size(), 1, f);
-    fclose(f);
-}
+void Utils::DownloadManager::DownloadTo(const std::string &url, const std::string &location, const std::string &filename){
+    std::vector<uint8_t> data;
 
-void Utils::DownloadManager::DownloadGamesIDJson(){
-    std::vector<uint8_t> tmp;
-    GetUrl("https://raw.githubusercontent.com/hax0kartik/wumiibo/master/jsons/gameids.json", tmp);
-    mkdir("/3ds/wumiibo", 0777); // if fails ignore
-    FILE *f = fopen("/3ds/wumiibo/gameids.json", "wb+");
-    fwrite(tmp.data(), tmp.size(), 1, f);
-    fclose(f);
+    //This silently fails when location is already present
+    mkdir(location.c_str(), 0777);
+
+    const std::string finalloc = location + "/" + filename;
+    GetUrl(url, data);
+    FILE *file = fopen(finalloc.c_str(), "wb+");
+    fwrite(data.data(), data.size(), 1, file);
+    fclose(file);
 }

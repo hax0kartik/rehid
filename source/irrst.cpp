@@ -65,7 +65,7 @@ Result irrstInit_(uint8_t steal)
     Result ret=0;
 
     // Request service.
-    if(R_FAILED(ret=srvGetServiceHandle(&irrstHandle_, "ir:rst"))) 
+    if(R_FAILED(ret=srvGetServiceHandle(&irrstHandle_, "ir:rst")))
             goto cleanup0;
 
     // Get sharedmem handle.
@@ -251,7 +251,7 @@ void iruExit_(void)
 void iruScanInput_()
 {
     u8 state = *statePA;
-    
+
     if(state == 1 && irrstRefCount >= 1 && overridecpadpro == 0) { //iruser was initialized
         irrstExit_();
     }
