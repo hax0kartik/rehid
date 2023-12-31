@@ -187,6 +187,8 @@ void Hid::EnteringSleepMode()
 {
     LightLock_Lock(&m_sleeplock); // now that main thread accquired the lock, sampling thread will get stuck
     svcClearEvent(dummyhandles[2]);
+    iruExit_();
+    
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
 
@@ -201,6 +203,8 @@ void Hid::ExitingSleepMode()
     m_debugpadring->Reset();
     m_pad.SetTimer();
     m_debugpad.SetTimer();
+    irInit();
+    
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
 

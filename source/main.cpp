@@ -31,14 +31,14 @@ static Result HandleNotifications(Hid *hid, int *exit)
 
         case 0x104: // Entering SleepMode
         {
-            irneeded = 0;
+            irneeded <<= 1;
             hid->EnteringSleepMode();
             break;
         }
 
         case 0x105: // Exiting SleepMode
         {
-            irneeded = 1;
+            irneeded >>= 1;
             hid->ExitingSleepMode();
             break;
         }

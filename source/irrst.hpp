@@ -3,6 +3,7 @@
 #include "exclusive_rw.hpp"
 
 Result iruInit_(uint8_t steal = 0);
+void iruExit_(void);
 void irrstExit_(void);
 void iruScanInput_(void);
 u32 iruKeysHeld_(void);
