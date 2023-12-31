@@ -191,7 +191,7 @@ uint32_t Remapper::Remap(uint32_t hidstate, uint32_t newpressedkeys)
 
     for(int i = 0; i < m_turboentries; i++)
     {
-        if((newpressedkeys & m_remapturboobjects[i].onkey) == m_remapturboobjects[i].onkey)
+        if((hidstate & m_remapturboobjects[i].onkey) == m_remapturboobjects[i].onkey)
         {
             newstate &= ~m_remapturboobjects[i].onkey;
             m_remapturboobjects[i].state = !m_remapturboobjects[i].state;
