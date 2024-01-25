@@ -194,18 +194,16 @@ uint32_t Remapper::Remap(uint32_t hidstate, uint32_t newpressedkeys)
         if((hidstate & m_remapturboobjects[i].onkey) == m_remapturboobjects[i].onkey)
         {
             newstate &= ~m_remapturboobjects[i].onkey;
-            m_remapturboobjects[i].state = !m_remapturboobjects[i].state;
-            m_remapturboobjects[i].frames = 0;
+            if (m_remapturboobjects[i].frames >= m_remapturboobjects[i].framedelay) {
+                m_remapturboobjects[i].frames = 0;
+            } else if (m_remapturboobjects[i].frames * 2 >= m_remapturboobjects[i].framedelay) {
+                newstate ^= m_remapturboobjects[i].newkey;
+            }
+
+            m_remapturboobjects[i].frames++;
             //int len = sprintf_(buf, "Key Pressed, i: %d\n", i);
             //svcOutputDebugString(buf, len);
         }
-
-        if(m_remapturboobjects[i].state && (m_remapturboobjects[i].frames >= m_remapturboobjects[i].framedelay))
-        {
-            newstate = newstate ^ m_remapturboobjects[i].newkey;
-            m_remapturboobjects[i].frames = 0;
-        } else if(m_remapturboobjects[i].state)
-            m_remapturboobjects[i].frames++;
     }
 
     if(m_homebuttonkeys != 0)
