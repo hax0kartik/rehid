@@ -11,7 +11,13 @@ extern "C"
     #include "gpio.h"
     #include "i2c.h"
 }
+
+#ifdef CTR_ALIGN
+static uint8_t CTR_ALIGN(8) hidthreadstack[0x1000];
+#else
 static uint8_t ALIGN(8) hidthreadstack[0x1000];
+#endif
+
 void Hid::CreateAndMapMemoryBlock()
 {
     // 0x1000 is rounded off size for 0x2B0
