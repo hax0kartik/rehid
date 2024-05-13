@@ -71,9 +71,15 @@ void Pad::Sampling(u32 rcpr, Remapper *remapper)
     CirclePadEntry rawcirclepad;
     rawcirclepad.x = rcpr & 0xFFF;
     rawcirclepad.y = (rcpr & 0xFFF000) >> 12;
-    CirclePadEntry finalcirclepad;
+    CirclePadEntry finalcirclepad {0, 0};
     svcSetTimer(m_timer, 4000000LL, 0LL);
+
+    // Many people use rehid to just disable cpad, so make it simpler
+    // to build.
+#ifndef DISABLE_CPAD
     m_circlepad.RawToCirclePadCoords(&finalcirclepad, rawcirclepad);
+#endif
+
     if(m_counter % 3 == 0)
     {
         m_slider.ReadValuesFromMCU();
