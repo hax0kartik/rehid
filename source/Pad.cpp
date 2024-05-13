@@ -41,13 +41,15 @@ void Pad::ReadFromIO(PadEntry *entry, uint32_t *raw, CirclePadEntry *circlepad, 
     GPIOHID_GetData(0x4001, &val);
     *raw = latest;
     latest = latest & ~(2 * (latest & 0x40) | ((latest & 0x20u) >> 1));
-    /*
+
+#ifdef ENABLE_DEBUGPAD_REMAPPING
     if(val & 0x1) {
         latest |= debugpadkeys;
         circlepad->x = debugpadstick.x;
         circlepad->y = debugpadstick.y;
     }
-    */
+#endif
+
     latest = m_circlepad.ConvertToHidButtons(circlepad, latest); // if need be this also sets the circlepad entry to 0
     if(irneeded == 1){
         iruScanInput_();

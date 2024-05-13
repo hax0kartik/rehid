@@ -9,6 +9,10 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
 
+ifndef ENABLE_DEBUGPAD_REMAPPING
+ENABLE_DEBUGPAD_REMAPPING = 0
+endif
+
 #---------------------------------------------------------------------------------
 # TARGET is the name of the TITLE
 # BUILD is the directory where object files & intermediate files will be placed
@@ -33,6 +37,10 @@ CFLAGS	:=  -Wall -O2 -mword-relocations \
 			$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -D__3DS__
+
+ifneq ($(ENABLE_DEBUGPAD_REMAPPING), 0)
+CFLAGS	+=	-DENABLE_DEBUGPAD_REMAPPING=1
+endif
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=c++20
 ASFLAGS	:=	$(ARCH)
