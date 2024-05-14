@@ -2,35 +2,40 @@
 #include "../app.hpp"
 #include "../Utils/Misc.hpp"
 
-Download::Download(){
+Download::Download() {
     LightLock_Init(&m_lock);
 }
 
-Download::~Download(){
+Download::~Download() {
 
 }
 
-void Download::OnStateEnter(App *app){
+void Download::OnStateEnter(App *app) {
     m_textbuf = C2D_TextBufNew(500);
     std::string s;
-    if(app->IsReboot()){
+
+    if (app->IsReboot()) {
         m_fullreboot = true;
         m_rebootrequired = false;
         auto haverehid = Utils::Misc::CheckRehid();
-        if(haverehid)
+
+        if (haverehid)
             s = "Download Complete. Press B to Exit the app.\n";
         else
             s = "Verification failed.\nPlease manually install the app.\nPress B to exit.";
+
         SetString(s);
         return;
     }
-    if(!app->IsConnected()){
+
+    if (!app->IsConnected()) {
         m_rebootrequired = false;
         m_fullreboot = false;
         s = "Not connected to Internet. Press B.";
         SetString(s);
         return;
     }
+
     s = "Downloading Latest Release...";
     SetString(s);
     worker.CreateThread([](Download &download, App *app) -> void {
@@ -43,38 +48,47 @@ void Download::OnStateEnter(App *app){
         Utils::Misc::EnableGamePatching();
         std::string s = "Download Complete. Rebooting...";
         download.SetString(s);
-        svcSleepThread(2e+9); // 2 secs
+        svcSleepThread(2e + 9); // 2 secs
     }, *this, app, 1024 * 1024 * 2); /* 2 MB should be enough */
     m_rebootrequired = true;
 }
 
-void Download::OnStateExit(App *app){
+void Download::OnStateExit(App *app) {
     (void)app;
-    while(!worker.IsDone()){
-        svcSleepThread(0.05e+9);
+
+    while (!worker.IsDone()) {
+        svcSleepThread(0.05e + 9);
     }
+
     C2D_TextBufDelete(m_textbuf);
-    if(m_fullreboot){
+
+    if (m_fullreboot) {
         Utils::Misc::Reboot();
-        while(1);;
+
+        while (1)
+            ;;
     }
-    if(m_rebootrequired){
+
+    if (m_rebootrequired) {
         Utils::Misc::RebootToSelf();
-        while(1);;
+
+        while (1)
+            ;;
     }
 }
 
-std::optional<ui::States> Download::HandleEvent(){
+std::optional<ui::States> Download::HandleEvent() {
     /* We mark it as going to menu when infact we'll reboot */
-    if(worker.IsDone() && m_rebootrequired)
+    if (worker.IsDone() && m_rebootrequired)
         return ui::States::MainMenu;
 
-    if(keysDown() & KEY_B)
+    if (keysDown() & KEY_B)
         return ui::States::MainMenu;
+
     return {};
 }
 
-void Download::RenderLoop(){
+void Download::RenderLoop() {
     auto top = ui::g_RenderTarget.GetRenderTarget(ui::Screen::Top);
     auto bottom = ui::g_RenderTarget.GetRenderTarget(ui::Screen::Bottom);
 
@@ -96,7 +110,7 @@ void Download::RenderLoop(){
     LightLock_Unlock(&m_lock);
 }
 
-void Download::SetString(const std::string &str){
+void Download::SetString(const std::string &str) {
     LightLock_Lock(&m_lock);
     m_message = str;
     C2D_TextParse(&m_text, m_textbuf, m_message.c_str());

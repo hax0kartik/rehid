@@ -1,6 +1,5 @@
 #include "app.hpp"
-int main()
-{
+int main() {
     App app;
     app.Intialize();
     app.RunLoop();

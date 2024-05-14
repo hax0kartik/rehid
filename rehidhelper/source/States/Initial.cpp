@@ -2,14 +2,14 @@
 #include "../app.hpp"
 #include "../Utils/Misc.hpp"
 
-Initial::Initial(){
+Initial::Initial() {
     LightLock_Init(&m_lock);
 }
 
-Initial::~Initial(){
+Initial::~Initial() {
 }
 
-void Initial::OnStateEnter(App *app){
+void Initial::OnStateEnter(App *app) {
     m_textbuf = C2D_TextBufNew(1000);
     std::string str = "Initial State";
     SetString(str);
@@ -23,7 +23,8 @@ void Initial::OnStateEnter(App *app){
         auto& titles = titlemanager.GetFilteredTitles();
         titlemanager.PopulateIcons(titles.data(), titles.size());
         std::string str = "Checking if Internet is connected.";
-        if(app->IsConnected()){
+
+        if (app->IsConnected()) {
             str = "Connected.";
             initial.SetString(str);
         }
@@ -32,22 +33,24 @@ void Initial::OnStateEnter(App *app){
     }, *this, app);
 }
 
-void Initial::OnStateExit(App *app){
+void Initial::OnStateExit(App *app) {
     /* This could occur on home menu press */
-    while(!worker.IsDone()){
-        svcSleepThread(0.05e+9);
+    while (!worker.IsDone()) {
+        svcSleepThread(0.05e + 9);
     }
+
     (void)app;
     C2D_TextBufDelete(m_textbuf);
 }
 
-std::optional<ui::States> Initial::HandleEvent(){
-    if(worker.IsDone() && !m_broken)
+std::optional<ui::States> Initial::HandleEvent() {
+    if (worker.IsDone() && !m_broken)
         return ui::States::MainMenu;
+
     return {};
 }
 
-void Initial::RenderLoop(){
+void Initial::RenderLoop() {
     auto top = ui::g_RenderTarget.GetRenderTarget(ui::Screen::Top);
     auto bottom = ui::g_RenderTarget.GetRenderTarget(ui::Screen::Bottom);
 
@@ -69,7 +72,7 @@ void Initial::RenderLoop(){
     LightLock_Unlock(&m_lock);
 }
 
-void Initial::SetString(const std::string &str){
+void Initial::SetString(const std::string &str) {
     LightLock_Lock(&m_lock);
     m_message = str;
     C2D_TextParse(&m_text, m_textbuf, m_message.c_str());

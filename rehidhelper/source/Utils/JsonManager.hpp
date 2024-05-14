@@ -4,11 +4,11 @@
 #include <utility>
 #include <string>
 
-namespace Utils{
-    class JsonManager{
-        public:
-            void operator=(const JsonManager &) = delete;
-            std::string ParseAndGetLatest(const std::vector<uint8_t> &data);
-        private:
-    };
+namespace Utils {
+class JsonManager {
+public:
+    void operator=(const JsonManager &) = delete;
+    std::string ParseAndGetLatest(const std::vector<uint8_t> &data);
+private:
+};
 }

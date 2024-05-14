@@ -2,35 +2,37 @@
 #include "../app.hpp"
 #include "../Utils/Misc.hpp"
 
-Toggle::Toggle(){
+Toggle::Toggle() {
 }
 
-Toggle::~Toggle(){
+Toggle::~Toggle() {
 }
 
-void Toggle::OnStateEnter(App *app){
+void Toggle::OnStateEnter(App *app) {
     m_textbuf = C2D_TextBufNew(100);
     auto haverehid = Utils::Misc::CheckRehid();
     Utils::Misc::SetRehidState(!haverehid);
-    if(haverehid){
+
+    if (haverehid) {
         SetString("Disabled. Press B to Reboot.");
     } else {
         SetString("Enabled. Press B to Reboot.");
     }
 }
 
-void Toggle::OnStateExit(App *app){
+void Toggle::OnStateExit(App *app) {
     (void)app;
     C2D_TextBufDelete(m_textbuf);
 }
 
-std::optional<ui::States> Toggle::HandleEvent(){
-    if(keysDown() & KEY_B)
+std::optional<ui::States> Toggle::HandleEvent() {
+    if (keysDown() & KEY_B)
         Utils::Misc::Reboot();
+
     return {};
 }
 
-void Toggle::RenderLoop(){
+void Toggle::RenderLoop() {
     auto top = ui::g_RenderTarget.GetRenderTarget(ui::Screen::Top);
     auto bottom = ui::g_RenderTarget.GetRenderTarget(ui::Screen::Bottom);
 
@@ -48,7 +50,7 @@ void Toggle::RenderLoop(){
     C2D_DrawText(&m_text, C2D_AlignCenter, 160.0f, y, 1.0f, 0.5f, 0.5f);
 }
 
-void Toggle::SetString(const std::string &str){
+void Toggle::SetString(const std::string &str) {
     m_message = str;
     C2D_TextParse(&m_text, m_textbuf, m_message.c_str());
     C2D_TextOptimize(&m_text);

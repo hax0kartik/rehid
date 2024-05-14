@@ -2,7 +2,7 @@
 #include "ui.hpp"
 
 ui::RenderTargets ui::g_RenderTarget;
-Result ui::Intialize(){
+Result ui::Intialize() {
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
     C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
     C2D_Prepare();
@@ -11,11 +11,13 @@ Result ui::Intialize(){
     return 0;
 }
 
-void ui::Elements::IconAndText::Intialize(){
+void ui::Elements::IconAndText::Intialize() {
     C2D_SpriteSheet sheet = C2D_SpriteSheetLoad("/3ds/rehid/images/icon.t3x");
-    if(!sheet){
+
+    if (!sheet) {
         sheet = C2D_SpriteSheetLoad("romfs:/icon.t3x");
     }
+
     m_image = C2D_SpriteSheetGetImage(sheet, 0);
     m_textbuf = C2D_TextBufNew(100);
     const static std::string s = "RehidHelper";
@@ -23,17 +25,21 @@ void ui::Elements::IconAndText::Intialize(){
     C2D_TextOptimize(&m_text);
 }
 
-void ui::Elements::IconAndText::DrawIconAndTextInMiddle(const ui::Screen s, bool dofadeffect){
+void ui::Elements::IconAndText::DrawIconAndTextInMiddle(const ui::Screen s, bool dofadeffect) {
     C2D_ImageTint tint;
-    if(m_effect == 0){
-        if(m_alpha < .5)
+
+    if (m_effect == 0) {
+        if (m_alpha < .5)
             m_effect = 1;
+
         m_alpha = m_alpha - 0.005f;
     } else {
-        if(m_alpha > 1.0)
+        if (m_alpha > 1.0)
             m_effect = 0;
+
         m_alpha = m_alpha + 0.005f;
     }
+
     auto screenwidth = ui::Dimensions::GetWidth(s);
     constexpr auto screenheight = ui::Dimensions::GetHeight();
     float textwidth, textheight;
@@ -43,7 +49,7 @@ void ui::Elements::IconAndText::DrawIconAndTextInMiddle(const ui::Screen s, bool
     C2D_DrawText(&m_text, C2D_AlignCenter, screenwidth / 2, screenheight / 2 + textheight, 1.0f, 1.0f, 1.0f);
 }
 
-void ui::Elements::DrawBars(const ui::Screen screen){
+void ui::Elements::DrawBars(const ui::Screen screen) {
     const auto thickness = 5.0f;
     auto screenwidth = ui::Dimensions::GetWidth(screen);
     constexpr auto screenheight = ui::Dimensions::GetHeight();
