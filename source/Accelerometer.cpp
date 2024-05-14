@@ -1,115 +1,113 @@
 #include "Accelerometer.hpp"
 #include "mcuhid.hpp"
 
-void Accelerometer::Initialize()
-{
+void Accelerometer::Initialize() {
     AccelerometerCalibration calib;
-    if(!m_initialized)
-    {
+
+    if (!m_initialized) {
         cfguInit();
         Result ret = CFG_GetConfigInfoBlk4(0xC, 0x40003u, &calib);
         cfguExit();
-        if(ret != 0) *(u32*)0x123456 = ret;
+
+        if (ret != 0)
+            *(u32*)0x123456 = ret;
+
         m_calib.scalex = calib.offsetx;
         m_calib.offsetx = calib.scalex;
         m_calib.scaley = calib.offsety;
         m_calib.offsety = calib.scaley;
         m_calib.scalez = calib.offsetz;
         m_calib.offsetz = calib.scalez;
-        
+
         svcCreateEvent(&m_event, RESET_ONESHOT);
-        if(R_FAILED(mcuHidGetAccelerometerEventHandle(&m_irqevent))) svcBreak(USERBREAK_ASSERT);
+
+        if (R_FAILED(mcuHidGetAccelerometerEventHandle(&m_irqevent)))
+            svcBreak(USERBREAK_ASSERT);
+
         m_initialized = 1;
     }
 }
 
-void Accelerometer::EnableOrDisableInterrupt(u8 explicitenable)
-{
-    if(explicitenable != -1)
-    {
-        mcuHidEnableAccelerometerInterrupt(explicitenable); 
+void Accelerometer::EnableOrDisableInterrupt(u8 explicitenable) {
+    if (explicitenable != -1) {
+        mcuHidEnableAccelerometerInterrupt(explicitenable);
         return;
     }
-    
-    else if(m_refcount <= 0)
+
+    else if (m_refcount <= 0)
         mcuHidEnableAccelerometerInterrupt(0); // disable
     else
         mcuHidEnableAccelerometerInterrupt(1); // enable
 }
 
-void Accelerometer::EnableAndIncreementRef()
-{
-    if(!m_refcount)
+void Accelerometer::EnableAndIncreementRef() {
+    if (!m_refcount)
         mcuHidEnableAccelerometerInterrupt(1); // enable
+
     ++m_refcount;
 }
 
-void Accelerometer::DisableAndDecreementRef()
-{
+void Accelerometer::DisableAndDecreementRef() {
     --m_refcount;
-    if(!m_refcount)
+
+    if (!m_refcount)
         mcuHidEnableAccelerometerInterrupt(0); // disable
 }
 
-void Accelerometer::SetAccelerometerStatus(u8 enable)
-{
+void Accelerometer::SetAccelerometerStatus(u8 enable) {
     mcuHidEnableAccelerometer(enable);
 }
 
-void Accelerometer::CalibrateVals(AccelerometerEntry *raw, AccelerometerEntry *final)
-{
+void Accelerometer::CalibrateVals(AccelerometerEntry *raw, AccelerometerEntry *final) {
     int16_t tmpx = ((raw->x - m_calib.offsetx) << 10) / (2 * m_calib.scalex);
     final->x = tmpx;
-    if ( tmpx >= -930 )
-    {
-        if ( tmpx > 930 )
+
+    if (tmpx >= -930) {
+        if (tmpx > 930)
             tmpx = 930;
-    }
-    else
-    {
+    } else {
         tmpx = -930;
     }
+
     final->x = tmpx;
-  
+
     int16_t tmpy = ((raw->y - m_calib.offsety) << 10) / (2 * m_calib.scaley);
     final->y = tmpy;
-    if ( tmpy >= -930 )
-    {
-        if ( tmpy > 930 )
+
+    if (tmpy >= -930) {
+        if (tmpy > 930)
             tmpy = 930;
-    }
-    else
-    {
+    } else {
         tmpy = -930;
     }
+
     final->y = tmpy;
 
     int16_t tmpz = ((raw->z - m_calib.offsetz) << 10) / (2 * m_calib.scalez);
     final->z = tmpz;
-    if ( tmpz >= -930 )
-    {
-        if ( tmpz > 930 )
+
+    if (tmpz >= -930) {
+        if (tmpz > 930)
             tmpz = 930;
-    }
-    else
-    {
+    } else {
         tmpz = -930;
     }
+
     final->z = tmpz;
 
 }
-void Accelerometer::Sampling()
-{
+
+void Accelerometer::Sampling() {
     AccelerometerEntry rawvals;
-    if(m_refcount > 0)
-    {
+
+    if (m_refcount > 0) {
         uint32_t reason;
         Result ret = mcuHidGetEventReason(&reason);
-        if(R_SUCCEEDED(ret) && (reason & 0x1000) != 0)
-        {
+
+        if (R_SUCCEEDED(ret) && (reason & 0x1000) != 0) {
             ret = mcuHidReadAccelerometerValues(&rawvals);
-            if(R_SUCCEEDED(ret))
-            {
+
+            if (R_SUCCEEDED(ret)) {
                 AccelerometerEntry calibvals;
                 AccelerometerEntry finalvals;
                 CalibrateVals(&rawvals, &calibvals);

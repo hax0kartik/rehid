@@ -5,9 +5,10 @@
 #include "irrst.hpp"
 #include <cstdio>
 extern "C" {
-    #include "csvc.h"
-    #include "services.h"
+#include "csvc.h"
+#include "services.h"
 }
+
 #define ONERRSVCBREAK(ret) if(R_FAILED(ret)) svcBreak(USERBREAK_ASSERT);
 #define OS_REMOTE_SESSION_CLOSED MAKERESULT(RL_STATUS,    RS_CANCELED, RM_OS, 26)
 #define OS_INVALID_HEADER        MAKERESULT(RL_PERMANENT, RS_WRONGARG, RM_OS, 47)
@@ -15,64 +16,58 @@ extern "C" {
 
 extern u8 irneeded;
 extern int irrstRefCount;
-static Result HandleNotifications(Hid *hid, int *exit)
-{
+static Result HandleNotifications(Hid *hid, int *exit) {
     uint32_t notid = 0;
     Result ret = srvReceiveNotification(&notid);
-    if(R_FAILED(ret)) return ret;
 
-    switch(notid)
-    {
-        case 0x100: // Exit
-        {
+    if (R_FAILED(ret))
+        return ret;
+
+    switch (notid) {
+        case 0x100: { // Exit
             *exit = 1;
             break;
         }
 
-        case 0x104: // Entering SleepMode
-        {
+        case 0x104: { // Entering SleepMode
             irneeded <<= 1;
             hid->EnteringSleepMode();
             break;
         }
 
-        case 0x105: // Exiting SleepMode
-        {
+        case 0x105: { // Exiting SleepMode
             irneeded >>= 1;
             hid->ExitingSleepMode();
             break;
         }
 
-        case 0x10C: // Regular Application started
-        {
+        case 0x10C: { // Regular Application started
             break;
         }
 
-        case 0x204: // Home button pressed
-        {
+        case 0x204: { // Home button pressed
             break;
         }
 
-        case 0x213: // Shell Opened
-        {
+        case 0x213: { // Shell Opened
             hid->IsShellOpened(true);
             break;
         }
 
-        case 0x214: // Shell Closed
-        {
+        case 0x214: { // Shell Closed
             hid->IsShellOpened(false);
             break;
         }
 
-        case 0x110: // Application terminated
-        {
-            if(!hid->GetRemapperObject()->isGlobal())
+        case 0x110: { // Application terminated
+            if (!hid->GetRemapperObject()->isGlobal())
                 hid->GetRemapperObject()->Reset();
+
             break;
         }
 
     }
+
     return 0;
 }
 
@@ -83,9 +78,8 @@ extern "C"
     extern char *fake_heap_end;
 
     // this is called before main
-    void __system_allocateHeaps(void)
-    {
-        u32 tmp=0;
+    void __system_allocateHeaps(void) {
+        u32 tmp = 0;
         __ctru_heap_size = 0x8000;
         // Allocate the application heap
         __ctru_heap = 0x08000000;
@@ -99,11 +93,14 @@ extern "C"
         srvSysInit();
         fsSysInit();
         Result ret = mcuHidInit();
-        if(ret != 0) *(u32*)ret = 0xFFAA;
+
+        if (ret != 0)
+            *(u32*)ret = 0xFFAA;
+
         //gdbHioDevInit();
         //gdbHioDevRedirectStdStreams(false, true, false);
         ptmSysmInit();
-      //  logInit();
+        //  logInit();
     }
 
     // this is called after main exits
@@ -136,8 +133,7 @@ extern "C"
     }
 }
 
-int main()
-{
+int main() {
     Hid hid;
     IPC ipc;
 
@@ -178,6 +174,7 @@ int main()
     Handle target = 0;
     s32 targetindex = -1;
     int terminationflag = 0;
+
     for (;;) {
         s32 index;
 
@@ -197,12 +194,10 @@ int main()
 
             if (res != OS_REMOTE_SESSION_CLOSED) {
                 ONERRSVCBREAK(0xd9875);
-            }
-            else if (index == -1) {
+            } else if (index == -1) {
                 if (lasttargetindex == -1) {
                     ONERRSVCBREAK(0xd9874);
-                }
-                else
+                } else
                     index = lasttargetindex;
             }
 
@@ -211,6 +206,7 @@ int main()
 
             svcCloseHandle(sessionhandles[index]);
             handlecount--;
+
             for (s32 i = index - REMOTESESSIONINDEX; i < handlecount - REMOTESESSIONINDEX; i++) {
                 sessionhandles[REMOTESESSIONINDEX + i] = sessionhandles[REMOTESESSIONINDEX + i + 1];
                 serviceindexes[i] = serviceindexes[i + 1];

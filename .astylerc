@@ -1,0 +1,12 @@
+--align-reference=none
+--convert-tabs
+--break-blocks
+--break-one-line-headers
+--unpad-paren
+--indent-switches
+--indent=spaces=4
+--pad-header
+--pad-oper
+--pad-comma
+--style=java
+--suffix=none

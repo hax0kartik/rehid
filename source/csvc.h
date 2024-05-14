@@ -19,8 +19,7 @@
 #include <3ds/types.h>
 
 /// Operations for svcControlService
-typedef enum ServiceOp
-{
+typedef enum ServiceOp {
     SERVICEOP_STEAL_CLIENT_SESSION = 0, ///< Steal a client session given a service or global port name
     SERVICEOP_GET_NAME,                 ///< Get the name of a service or global port given a client or session handle
 } ServiceOp;

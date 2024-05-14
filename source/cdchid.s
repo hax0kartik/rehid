@@ -1,9 +1,9 @@
 .arm
 
 .global CDCHID_GetDataAsm
-.type CDCHID_GetDataAsm, %function
+.type CDCHID_GetDataAsm, % function
 CDCHID_GetDataAsm:
-push {r4-r6, lr}
+push {r4 - r6, lr}
 mov r5, r1
 mrc p15, 0, r4, c13, c0, 3
 mov r1, #0x10000
@@ -16,4 +16,4 @@ ldrd r0, r1, [r4, #8]
 strd r0, r1, [r5]
 ldr r0, [r4, #4]
 ret:
-pop {r4-r6, pc}
+pop {r4 - r6, pc}
