@@ -523,7 +523,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // in "%g" mode, "prec" is the number of *significant figures* not decimals
     if (flags & FLAGS_ADAPT_EXP) {
         // do we want to fall-back to "%f" mode?
-        if ((value >= 1e - 4) && (value < 1e6)) {
+        if ((value >= 1e-4) && (value < 1e6)) {
             if ((int)prec > expval) {
                 prec = (unsigned)((int)prec - expval - 1);
             } else {

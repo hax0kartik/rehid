@@ -113,7 +113,7 @@ void DebugPad::Initialize() {
         return;
     }
 
-    svcSleepThread(5e + 6);
+    svcSleepThread(5e+6);
 
     if (R_FAILED(ret = I2C_ReadRegisterBuffer(12, 0xFF, &buf, sizeof(buf)))) {
         return;
@@ -126,7 +126,7 @@ void DebugPad::Initialize() {
     */
     // if(buf != 0xF0) return;
 
-    svcSleepThread(5e + 6);
+    svcSleepThread(5e+6);
 
     buf = 0; // Disables vibration
 

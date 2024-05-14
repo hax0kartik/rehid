@@ -92,7 +92,7 @@ static inline bool isServiceUsable(const char *name) {
 u8 irneeded = 0;
 static void irInit() {
     while (!isServiceUsable("ir:u"))
-        svcSleepThread(1e + 9); // Wait For service
+        svcSleepThread(1e+9); // Wait For service
 
     srvSetBlockingPolicy(true);
     Result ret = iruInit_();
@@ -240,7 +240,7 @@ void Hid::CheckIfIRPatchExists() {
             *(u32*)0xf009f010 = ret; // Neither this should happen
 
         FSFILE_Close(fshandle);
-        PTMSYSM_RebootAsync(2e + 9);
+        PTMSYSM_RebootAsync(2e+9);
     }
 
     return ;

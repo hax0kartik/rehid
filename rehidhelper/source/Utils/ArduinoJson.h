@@ -1682,12 +1682,12 @@ struct FloatTraits<T, 4 /*32bits*/> {
     }
 
     static T negativeBinaryPowerOfTen(int index) {
-        static T factors[] = {1e - 1f, 1e - 2f, 1e - 4f, 1e - 8f, 1e - 16f, 1e - 32f};
+        static T factors[] = {1e-1f, 1e-2f, 1e-4f, 1e-8f, 1e-16f, 1e-32f};
         return factors[index];
     }
 
     static T negativeBinaryPowerOfTenPlusOne(int index) {
-        static T factors[] = {1e0f, 1e - 1f, 1e - 3f, 1e - 7f, 1e - 15f, 1e - 31f};
+        static T factors[] = {1e0f, 1e-1f, 1e-3f, 1e-7f, 1e-15f, 1e-31f};
         return factors[index];
     }
 

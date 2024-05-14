@@ -48,7 +48,7 @@ void Download::OnStateEnter(App *app) {
         Utils::Misc::EnableGamePatching();
         std::string s = "Download Complete. Rebooting...";
         download.SetString(s);
-        svcSleepThread(2e + 9); // 2 secs
+        svcSleepThread(2e+9); // 2 secs
     }, *this, app, 1024 * 1024 * 2); /* 2 MB should be enough */
     m_rebootrequired = true;
 }
@@ -57,7 +57,7 @@ void Download::OnStateExit(App *app) {
     (void)app;
 
     while (!worker.IsDone()) {
-        svcSleepThread(0.05e + 9);
+        svcSleepThread(0.05e+9);
     }
 
     C2D_TextBufDelete(m_textbuf);

@@ -137,7 +137,7 @@ void Camera::OnStateEnter(App *app) {
         bool busy = false;
 
         while (R_SUCCEEDED(CAMU_IsBusy(&busy, PORT_CAM1)) && busy)
-            svcSleepThread(1e + 9);
+            svcSleepThread(1e+9);
         CAMU_ClearBuffer(PORT_CAM1);
         CAMU_Activate(SELECT_NONE);
         delete[] buffer;
@@ -148,7 +148,7 @@ void Camera::OnStateExit(App *app) {
     svcSignalEvent(m_finishedevent);
 
     while (!m_worker.IsDone() || !m_decodeworker.IsDone()) {
-        svcSleepThread(0.05e + 9);
+        svcSleepThread(0.05e+9);
     }
 
     delete[] m_buffer;
