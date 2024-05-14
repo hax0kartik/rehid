@@ -111,7 +111,13 @@ void DebugPad::Initialize()
     if(R_FAILED(ret = I2C_ReadRegisterBuffer(12, 0xFF, &buf, sizeof(buf)))){
         return;
     }
-    if(buf != 0xF0) return;
+    
+    /* 
+    Official hid does this to ensure that only the official debug pad controller 
+    is used with the CTR devunit. Simply commenting out this check will enable devunits
+    to be controlled using other wiimote extensions.
+    */
+    // if(buf != 0xF0) return;
 
     svcSleepThread(5e+6);
 
