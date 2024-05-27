@@ -17,8 +17,8 @@ void GameSelection::OnStateEnter(App *app) {
     m_page = 0;
     m_showgeneratedtext = false;
     m_generatedforglobal = false;
-    m_textbuf = C2D_TextBufNew(2000);
-    m_titles = app->GetTitleManager().GetFilteredTitles();
+    m_textbuf = C2D_TextBufNew(4000);
+    m_titles = app->GetTitleManager().GetFinalTitles();
     m_payload = app->GetPayload();
 
     auto descs = app->GetTitleManager().GetTitleDescription();

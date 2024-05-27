@@ -73,6 +73,7 @@ void Utils::TitleManager::PopulateIcons(uint64_t *titles, uint32_t count) {
 
                     m_smdhvector.push_back(data);
                     m_descvector.push_back(descstr);
+                    m_finaltitles.push_back(titles[i]);
                 }
             }
 

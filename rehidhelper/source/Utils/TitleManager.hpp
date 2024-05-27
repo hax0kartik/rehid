@@ -29,6 +29,10 @@ public:
         return m_filteredvector;
     };
 
+    const auto& GetFinalTitles() const {
+        return m_finaltitles;
+    }
+
 private:
     uint64_t *m_titles;
     uint32_t m_count;
@@ -36,5 +40,6 @@ private:
     std::vector<std::vector<uint8_t>> m_smdhvector;
     std::vector<std::string> m_descvector;
     std::vector<uint64_t> m_filteredvector;
+    std::vector<uint64_t> m_finaltitles;
 };
 }
