@@ -297,6 +297,17 @@ void irSampling() {
     IrrstEntry entry;
     svcSetTimer(irtimer, 8000000LL, 0LL);
     volatile uint32_t latest = *latestKeysPA;
+
+    if ((latest & 0x10000) == 0x10000) {
+        latest |= 0x4000;
+        latest &= ~0x10000;
+    }
+
+    if ((latest & 0x20000) == 0x20000) {
+        latest |= 0x8000;
+        latest &= ~0x20000;
+    }
+
     entry.pressedpadstate = (latest ^ latestkeys) & ~latestkeys;
     entry.releasedpadstate = (latest ^ latestkeys) & latestkeys;
     entry.currpadstate = latest;
