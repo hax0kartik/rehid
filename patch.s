@@ -100,6 +100,6 @@ mov r3, #0
 .org 0x1048D0 // Remove ZL/ZR from irrstSamplingThread
 orr r1, r1, #0x20000
 .org 0x1048E4
-orr r1, r1, #0x10000
+orr r0, r0, #0x10000
 
 .close
