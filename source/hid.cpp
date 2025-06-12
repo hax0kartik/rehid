@@ -113,7 +113,9 @@ static void SamplingFunction(void *argv) {
     Handle *gyrointrevent = hid->GetGyroscope()->GetIntrEvent();
     Handle *debugpadtimer = hid->GetDebugPad()->GetTimer();
     LightLock *lock = hid->GetSleepLock();
+#ifndef DISABLE_IR
     irInit();
+#endif
     int32_t out;
 
     while (!*hid->ExitThread()) {
@@ -129,7 +131,9 @@ static void SamplingFunction(void *argv) {
         switch (out) {
 
             case 0: {
+#ifndef DISABLE_IR
                 irSampling();
+#endif
                 break;
             }
 
@@ -190,7 +194,9 @@ void Hid::StartThreadsForSampling() {
 void Hid::EnteringSleepMode() {
     LightLock_Lock(&m_sleeplock); // now that main thread accquired the lock, sampling thread will get stuck
     svcClearEvent(dummyhandles[2]);
+#ifndef DISABLE_IR
     iruExit_();
+#endif
 
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
@@ -205,7 +211,9 @@ void Hid::ExitingSleepMode() {
     m_debugpadring->Reset();
     m_pad.SetTimer();
     m_debugpad.SetTimer();
+#ifndef DISABLE_IR
     irInit();
+#endif
 
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
