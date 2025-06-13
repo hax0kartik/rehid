@@ -18,6 +18,17 @@ static uint8_t CTR_ALIGN(8) hidthreadstack[0x1000];
 static uint8_t ALIGN(8) hidthreadstack[0x1000];
 #endif
 
+enum SamplingCases {
+#ifndef DISABLE_IR
+    CASE_IR,
+#endif
+    CASE_PAD,
+    CASE_DEBUGPAD,
+    CASE_GYROSCOPE,
+    CASE_ACCELEROMETER,
+    CASE_COUNT // Automatically represents the total number of cases
+};
+
 void Hid::CreateAndMapMemoryBlock() {
     // 0x1000 is rounded off size for 0x2B0
     Result ret = svcCreateMemoryBlock(&m_sharedmemhandle, 0, 0x1000, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), MEMPERM_READ);
@@ -119,9 +130,13 @@ static void SamplingFunction(void *argv) {
     int32_t out;
 
     while (!*hid->ExitThread()) {
+#ifndef DISABLE_IR
         Handle handles[] = {irtimer, *padtimer, *debugpadtimer, *gyrointrevent, *accelintrevent};
+#else
+        Handle handles[] = {*padtimer, *debugpadtimer, *gyrointrevent, *accelintrevent};
+#endif
         LightLock_Lock(lock);
-        ret = svcWaitSynchronizationN(&out, handles, 5, false, -1LL);
+        ret = svcWaitSynchronizationN(&out, handles, CASE_COUNT, false, -1LL);
 
         if (!hid->GetGyroscope()->m_issetupdone && osGetTime() - hid->GetGyroscope()->timeenable > 90 && hid->GetGyroscope()->GetRefCount() > 0) {
             hid->GetGyroscope()->SetupForSampling();
@@ -130,14 +145,14 @@ static void SamplingFunction(void *argv) {
 
         switch (out) {
 
-            case 0: {
 #ifndef DISABLE_IR
+            case CASE_IR: {
                 irSampling();
-#endif
                 break;
             }
+#endif
 
-            case 1: {
+            case CASE_PAD: {
                 ret = CDCHID_GetData(&touchscreendata, &circlepaddata);
 
                 if (ret == 0) {
@@ -148,17 +163,17 @@ static void SamplingFunction(void *argv) {
                 break;
             }
 
-            case 2: {
+            case CASE_DEBUGPAD: {
                 hid->GetDebugPad()->Sampling();
                 break;
             }
 
-            case 3: {
+            case CASE_GYROSCOPE: {
                 hid->GetGyroscope()->Sampling();
                 break;
             }
 
-            case 4: {
+            case CASE_ACCELEROMETER: {
                 hid->GetAccelerometer()->Sampling();
                 break;
             }
