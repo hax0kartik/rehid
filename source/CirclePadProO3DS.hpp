@@ -62,6 +62,7 @@ public:
             CreateThread(); 
         }
 
+        m_mock.DoSleep(val);
         return;
     }
 

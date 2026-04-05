@@ -52,6 +52,13 @@ public:
         return m_connected;
     }
 
+    void DoSleep(uint8_t sleep) {
+        if (sleep) {
+            m_latestdata.x = m_calibration.xoff;
+            m_latestdata.y = m_calibration.yoff;
+        }
+    }
+
     void SetCalibrationData(CPPCalibrationData *calibdata);
 
 private:

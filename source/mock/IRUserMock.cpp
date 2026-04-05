@@ -55,6 +55,10 @@ Result IRUserMock::InitializeIrNopShared(size_t sharedbufsize, size_t recvbufsiz
     m_shmem->header.connected = 0;
     m_shmem->header.networkid = 0xAA; // This should be randomly generated but we do not care
 
+    m_shmem->bufferinfo.packetcount = 0;
+    m_shmem->bufferinfo.beginindex = 0;
+    m_shmem->bufferinfo.endindex = 0;
+
     m_connected = false;
     m_initialized = 1;
     return 0;
@@ -145,7 +149,6 @@ Result IRUserMock::SendIrnop(uint8_t *buff, size_t size) {
     // sprintf(buf, "SendIrnop Called type : %X\n", buff[0]);
     // svcOutputDebugString(buf, strlen(buf));
 
-
     if (!buff) { // should not happen
         svcBreak(USERBREAK_ASSERT);
     }
@@ -232,6 +235,9 @@ void IRUserMock::CreateInputDataPayload(CPPInputResponse *response) {
 
 void IRUserMock::AddPayload(uint8_t *buffer, size_t length) {
     /* Cannot add more packets */
+    // sprintf(buf, "AddPayload packetcount : %d maxcount : %d\n", m_shmem->bufferinfo.packetcount, m_recvbufcount);
+    // svcOutputDebugString(buf, strlen(buf));
+
     if (m_shmem->bufferinfo.packetcount == m_recvbufcount) {
         return;
     }
