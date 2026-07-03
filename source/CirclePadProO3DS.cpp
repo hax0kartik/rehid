@@ -91,7 +91,10 @@ void CPPO3DS::ScanInput(Remapper *remapper) {
 
     CirclePadEntry entry {remapper->m_rawcpadx, remapper->m_rawcpady};
 
-    if (remapper->m_docpadtocnub && entry > m_cppstate.circlepadstate) {
+    if (remapper->m_overridecpadpro) {
+        CirclePadEntry nullentry = {m_calibrationdata.xoff, m_calibrationdata.yoff};
+        m_mock.SetLatestCirclePadData(&nullentry);
+    } else if (remapper->m_docpadtocnub && entry > m_cppstate.circlepadstate) {
         m_mock.SetLatestCirclePadData(&entry);
     } else {
         m_mock.SetLatestCirclePadData(&m_cppstate.circlepadstate);
