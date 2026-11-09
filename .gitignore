@@ -1,1 +1,8 @@
 *.cxi
+*.elf
+*.3dsx
+*.smdh
+
+build/
+sdmc/
+.vscode/
