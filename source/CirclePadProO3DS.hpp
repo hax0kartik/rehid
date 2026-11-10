@@ -51,6 +51,9 @@ public:
 
     virtual void SetEnteringSleep(uint8_t val) override {
         m_sleep = val;
+        if (!IsInitialized()) {
+            return;
+        }
         if (m_sleep) {
             svcSignalEvent(*GetExitEvent());
             MyThread_Join(&m_thread, 1000 * MILLIS);

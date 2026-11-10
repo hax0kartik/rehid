@@ -18,9 +18,7 @@ static uint8_t ALIGN(8) hidthreadstack[0x1000];
 #endif
 
 enum SamplingCases {
-#ifndef DISABLE_IR
     CASE_IR,
-#endif
     CASE_PAD,
     CASE_DEBUGPAD,
     CASE_GYROSCOPE,
@@ -130,11 +128,7 @@ static void SamplingFunction(void *argv) {
     int32_t out;
 
     while (!*hid->ExitThread()) {
-#ifndef DISABLE_IR
         Handle handles[] = {*irtimer, *padtimer, *debugpadtimer, *gyrointrevent, *accelintrevent};
-#else
-        Handle handles[] = {*padtimer, *debugpadtimer, *gyrointrevent, *accelintrevent};
-#endif
         LightLock_Lock(lock);
         ret = svcWaitSynchronizationN(&out, handles, CASE_COUNT, false, -1LL);
 
@@ -145,12 +139,10 @@ static void SamplingFunction(void *argv) {
 
         switch (out) {
 
-#ifndef DISABLE_IR
             case CASE_IR: {
                 hid->GetIR()->Sampling();
                 break;
             }
-#endif
 
             case CASE_PAD: {
                 ret = CDCHID_GetData(&touchscreendata, &circlepaddata);
@@ -210,10 +202,7 @@ void Hid::StartThreadsForSampling() {
 void Hid::EnteringSleepMode() {
     LightLock_Lock(&m_sleeplock); // now that main thread accquired the lock, sampling thread will get stuck
     svcClearEvent(dummyhandles[2]);
-#ifndef DISABLE_IR
     m_ir->SetEnteringSleep(1);
-#endif
-
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
 
@@ -227,10 +216,8 @@ void Hid::ExitingSleepMode() {
     m_debugpadring->Reset();
     m_pad.SetTimer();
     m_debugpad.SetTimer();
-#ifndef DISABLE_IR
     m_ir->SetEnteringSleep(0);
     m_ir->SetTimer();
-#endif
 
     PTMSYSM_NotifySleepPreparationComplete(0);
 }
