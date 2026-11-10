@@ -163,13 +163,13 @@ void DebugPad::Initialize() {
 u32 debugpadkeys = 0;
 CirclePadEntry debugpadstick;
 CirclePadEntry debugpadrightstick;
-// HID direction buttons use centered coordinates, unlike the raw CPP analog data.
-CirclePadEntry rightstickbuttons;
 void DebugPad::Sampling() {
     if (!m_isinitialized)
         return;
 
     DebugPadEntry entry;
+    // HID direction buttons use centered coordinates, unlike the raw CPP analog data.
+    CirclePadEntry rightstickbuttons;
 
     if (!ReadEntry(&entry)) {
         /* some logic */
