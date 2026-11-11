@@ -45,6 +45,7 @@ Result CPPO3DS::Initialize() {
         goto cleanup5;
     }
 
+    m_initialized = 1;
     return 0;
 
     cleanup5:
