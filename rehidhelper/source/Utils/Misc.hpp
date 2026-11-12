@@ -10,7 +10,7 @@ namespace Utils {
 namespace Misc {
 static inline void RebootToSelf() {
     nsInit();
-    Result ret = NS_RebootToTitle(MEDIATYPE_SD, 0x0004000000DF1000);
+    Result ret = NS_RebootToTitle(MEDIATYPE_SD, 0x0004000000DF1000, 0);
 
     if (R_FAILED(ret))
         *(u32*)ret = 0x123; // Shouldn't have happened
