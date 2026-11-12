@@ -97,13 +97,10 @@ bool Utils::DownloadManager::DownloadTo(const std::string &url, const std::strin
         return false;
     }
 
-    if (!sha256.empty()) {
-        const bool verified = verifySha256(finalloc, sha256);
-        if (!verified) {
-            // SHA256 verification failed, removing the downloaded file
-            remove(finalloc.c_str());
-            return false;
-        }
+    if (sha256.empty() || !verifySha256(finalloc, sha256)) {
+        // SHA256 verification failed, removing the downloaded file
+        remove(finalloc.c_str());
+        return false;
     }
 
     return true;
