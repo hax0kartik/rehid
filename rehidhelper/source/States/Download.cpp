@@ -41,20 +41,24 @@ void Download::OnStateEnter(App *app) {
         auto& downloadmanager = app->GetDownloadManager();
         auto& jsonmanager = app->GetJsonManager();
         std::vector<uint8_t> tmp;
+        std::string s;
         downloadmanager.GetUrl("https://api.github.com/repos/hax0kartik/rehid/releases/latest", tmp);
         auto [url, sha256] = jsonmanager.ParseAndGetLatest(tmp);
         const bool success = downloadmanager.DownloadTo(url, "/luma/sysmodules", "0004013000001D02.cxi.temp", sha256);
         if (!success) {
-            std::string s = "Download failed.\nPlease try again, or install manually.\nPress B to exit.";
+            s = "Download failed.\nPlease try again, or install manually.\nPress B to exit.";
             download.SetString(s);
             return;
         }
-        if (rename("/luma/sysmodules/0004013000001D02.cxi.temp", "/luma/sysmodules/0004013000001D02.cxi") != 0) {
-            download.SetString("Installation failed.\nPress B to exit.");
+        remove("/luma/sysmodules/0004013000001D02.cxi");
+        int renameresult = rename("/luma/sysmodules/0004013000001D02.cxi.temp", "/luma/sysmodules/0004013000001D02.cxi");
+        if (renameresult != 0) {
+            s = "Installation failed.\nPress B to exit.";
+            download.SetString(s);
             return;
         }
         Utils::Misc::EnableGamePatching();
-        std::string s = "Download Complete. Rebooting...";
+        s = "Download Complete. Rebooting...";
         download.SetString(s);
         svcSleepThread(2e+9); // 2 secs
         download.m_rebootrequired = true;
