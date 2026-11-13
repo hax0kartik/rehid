@@ -63,12 +63,11 @@ void CPPN3DS::Sampling() {
 }
 
 void CPPN3DS::ScanInput(Remapper *remapper) {
-    uint8_t state = *m_statepa;
-
     if (m_enteringsleep || !m_initialized) {
         m_cppstate = {};
         return;
     }
+    uint8_t state = *m_statepa;
 
     int refcount = irrstGetRefCount_();
 

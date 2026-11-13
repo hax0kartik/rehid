@@ -162,21 +162,27 @@ void DebugPad::Initialize() {
 
 u32 debugpadkeys = 0;
 CirclePadEntry debugpadstick;
+CirclePadEntry debugpadrightstick;
 void DebugPad::Sampling() {
     if (!m_isinitialized)
         return;
 
     DebugPadEntry entry;
+    // HID direction buttons use centered coordinates, unlike the raw CPP analog data.
+    CirclePadEntry rightstickbuttons;
 
     if (!ReadEntry(&entry)) {
         /* some logic */
         return;
     }
 
-    debugpadkeys = RemapKey(entry.currpadstate);
+    rightstickbuttons.x = map(entry.rightstickx, -16, 15, -180, 180);
+    rightstickbuttons.y = map(entry.rightsticky, -16, 15, -180, 180);
+    debugpadkeys = CirclePad::ConvertToHidButtons<CirclePadMode::CSTICK>(&rightstickbuttons, RemapKey(entry.currpadstate));
     debugpadstick.x = map(entry.leftstickx, -32, 31, -180, 180);
     debugpadstick.y = map(entry.leftsticky, -32, 31, -180, 180);
-
+    debugpadrightstick.x = map(entry.rightstickx, -16, 15, 0, 4095);
+    debugpadrightstick.y = map(entry.rightsticky, -16, 15, 0, 4095);
     if (m_writetoring) {
         m_ring->WriteToRing(&m_oldentry);
         m_oldentry = entry;

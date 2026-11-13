@@ -45,6 +45,7 @@ Result CPPO3DS::Initialize() {
         goto cleanup5;
     }
 
+    m_initialized = 1;
     return 0;
 
     cleanup5:
@@ -75,6 +76,10 @@ void CPPO3DS::SetTimer() {
 void CPPO3DS::Sampling() {
     svcSetTimer(m_timer, 8000000LL, 0LL);
 
+    if (IsEnteringSleep() || !IsInitialized()) {
+        return;
+    }
+
     CPPEntry entry;
     entry.pressedpadstate = (m_latestkeys ^ m_oldkeys) & ~m_oldkeys;
     entry.releasedpadstate = (m_latestkeys ^ m_oldkeys) & m_oldkeys;
@@ -97,7 +102,12 @@ void CPPO3DS::ScanInput(Remapper *remapper) {
     } else if (remapper->m_docpadtocnub && entry > m_cppstate.circlepadstate) {
         m_mock.SetLatestCirclePadData(&entry);
     } else {
+#ifdef ENABLE_DEBUGPAD_REMAPPING
+        extern CirclePadEntry debugpadrightstick;
+        m_mock.SetLatestCirclePadData(&debugpadrightstick);
+#else
         m_mock.SetLatestCirclePadData(&m_cppstate.circlepadstate);
+#endif
     }
 
     if (m_mock.IsConnected()) {
