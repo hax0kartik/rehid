@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <3ds.h>
 #include <sys/stat.h>
+#include <mbedtls/sha256.h>
 
 extern "C" Handle hidHandle;
 
@@ -117,6 +118,47 @@ static inline void EnableGamePatching() {
         fwrite(&data[0], data.length(), 1, f);
         fclose(f);
     }
+}
+
+bool VerifySHA256(const std::string &file, const std::string &sha256) {
+    const size_t offset = sha256.compare(0, 7, "sha256:") == 0 ? 7 : 0;
+    if (sha256.size() != offset + 64)
+        return false;
+
+    for (size_t i = offset; i < sha256.size(); ++i) {
+        if (!std::isxdigit(static_cast<unsigned char>(sha256[i])))
+            return false;
+    }
+
+    FILE *input = fopen(file.c_str(), "rb");
+    if (!input)
+        return false;
+
+    mbedtls_sha256_context context;
+    mbedtls_sha256_init(&context);
+    int result = mbedtls_sha256_starts_ret(&context, 0);
+    unsigned char buffer[4096];
+    size_t bytesRead;
+    while (result == 0 && (bytesRead = fread(buffer, 1, sizeof(buffer), input)) > 0)
+        result = mbedtls_sha256_update_ret(&context, buffer, bytesRead);
+
+    const bool readError = ferror(input) != 0;
+    const int closeResult = fclose(input);
+    unsigned char digest[32];
+    if (result == 0 && !readError && closeResult == 0)
+        result = mbedtls_sha256_finish_ret(&context, digest);
+    mbedtls_sha256_free(&context);
+
+    if (result != 0 || readError || closeResult != 0)
+        return false;
+
+    static const char hex[] = "0123456789abcdef";
+    for (size_t i = 0; i < sizeof(digest); ++i) {
+        if (std::tolower(static_cast<unsigned char>(sha256[offset + 2 * i])) != hex[digest[i] >> 4] ||
+            std::tolower(static_cast<unsigned char>(sha256[offset + 2 * i + 1])) != hex[digest[i] & 0x0f])
+            return false;
+    }
+    return true;
 }
 }
 }
