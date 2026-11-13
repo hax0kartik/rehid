@@ -8,7 +8,7 @@ namespace Utils {
 class JsonManager {
 public:
     void operator=(const JsonManager &) = delete;
-    std::string ParseAndGetLatest(const std::vector<uint8_t> &data);
+    std::pair<std::string, std::string> ParseAndGetLatest(const std::vector<uint8_t> &data);
 private:
 };
 }

@@ -13,10 +13,11 @@ Download::~Download() {
 void Download::OnStateEnter(App *app) {
     m_textbuf = C2D_TextBufNew(500);
     std::string s;
+    m_fullreboot = false;
+    m_rebootrequired = false;
 
     if (app->IsReboot()) {
         m_fullreboot = true;
-        m_rebootrequired = false;
         auto haverehid = Utils::Misc::CheckRehid();
 
         if (haverehid)
@@ -29,8 +30,6 @@ void Download::OnStateEnter(App *app) {
     }
 
     if (!app->IsConnected()) {
-        m_rebootrequired = false;
-        m_fullreboot = false;
         s = "Not connected to Internet. Press B.";
         SetString(s);
         return;
@@ -42,15 +41,28 @@ void Download::OnStateEnter(App *app) {
         auto& downloadmanager = app->GetDownloadManager();
         auto& jsonmanager = app->GetJsonManager();
         std::vector<uint8_t> tmp;
+        std::string s;
         downloadmanager.GetUrl("https://api.github.com/repos/hax0kartik/rehid/releases/latest", tmp);
-        auto url = jsonmanager.ParseAndGetLatest(tmp);
-        downloadmanager.DownloadTo(url, "/luma/sysmodules", "0004013000001D02.cxi");
+        auto [url, sha256] = jsonmanager.ParseAndGetLatest(tmp);
+        const bool success = downloadmanager.DownloadTo(url, "/luma/sysmodules", "0004013000001D02.cxi.temp", sha256);
+        if (!success) {
+            s = "Download failed.\nPlease try again, or install manually.\nPress B to exit.";
+            download.SetString(s);
+            return;
+        }
+        remove("/luma/sysmodules/0004013000001D02.cxi");
+        int renameresult = rename("/luma/sysmodules/0004013000001D02.cxi.temp", "/luma/sysmodules/0004013000001D02.cxi");
+        if (renameresult != 0) {
+            s = "Installation failed.\nPress B to exit.";
+            download.SetString(s);
+            return;
+        }
         Utils::Misc::EnableGamePatching();
-        std::string s = "Download Complete. Rebooting...";
+        s = "Download Complete. Rebooting...";
         download.SetString(s);
         svcSleepThread(2e+9); // 2 secs
+        download.m_rebootrequired = true;
     }, *this, app, 1024 * 1024 * 2); /* 2 MB should be enough */
-    m_rebootrequired = true;
 }
 
 void Download::OnStateExit(App *app) {

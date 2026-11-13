@@ -11,9 +11,9 @@ public:
     DownloadManager() = default;
     void operator=(const DownloadManager &) = delete;
     void Intialize();
-    int GetUrl(const std::string &url, std::vector<uint8_t> &data, bool write_to_file = false, FILE *f = nullptr);
+    int GetUrl(const std::string &url, std::vector<uint8_t> &data, bool write_to_file = false, FILE *f = nullptr, long timeout = 20);
     void DownloadAndUnzipTo(const std::string &url, const std::string &location);
-    void DownloadTo(const std::string &url, const std::string &location, const std::string &filename);
+    bool DownloadTo(const std::string &url, const std::string &location, const std::string &filename, const std::string &sha256 = "");
 private:
     CURL *m_handle;
     std::string m_url;

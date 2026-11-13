@@ -21,6 +21,7 @@ void Utils::DownloadManager::Intialize() {
     curl_easy_setopt(m_handle, CURLOPT_VERBOSE, 0L);
     curl_easy_setopt(m_handle, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(m_handle, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(m_handle, CURLOPT_CONNECTTIMEOUT, 10L);
     curl_easy_setopt(m_handle, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
     curl_easy_setopt(m_handle, CURLOPT_HTTPGET, 1L);
     curl_easy_setopt(m_handle, CURLOPT_USERAGENT, "Wumiibo");
@@ -28,7 +29,7 @@ void Utils::DownloadManager::Intialize() {
     curl_easy_setopt(m_handle, CURLOPT_WRITEDATA, &m_data);
 }
 
-int Utils::DownloadManager::GetUrl(const std::string &url, std::vector<uint8_t> &data, bool write_to_file, FILE *f) {
+int Utils::DownloadManager::GetUrl(const std::string &url, std::vector<uint8_t> &data, bool write_to_file, FILE *f, long timeout) {
     data.clear();
     data.shrink_to_fit();
     m_data.clear();
@@ -38,6 +39,7 @@ int Utils::DownloadManager::GetUrl(const std::string &url, std::vector<uint8_t> 
     curl_easy_setopt(m_handle, CURLOPT_URL, m_url.c_str());
     curl_easy_setopt(m_handle, CURLOPT_WRITEFUNCTION, write_function);
     curl_easy_setopt(m_handle, CURLOPT_WRITEDATA, &m_data);
+    curl_easy_setopt(m_handle, CURLOPT_TIMEOUT, timeout);
 
     if (write_to_file) {
         curl_easy_setopt(m_handle, CURLOPT_WRITEFUNCTION, file_write_function);
@@ -67,7 +69,7 @@ void Utils::DownloadManager::DownloadAndUnzipTo(const std::string &url, const st
     zip.extractall(location);
 }
 
-void Utils::DownloadManager::DownloadTo(const std::string &url, const std::string &location, const std::string &filename) {
+bool Utils::DownloadManager::DownloadTo(const std::string &url, const std::string &location, const std::string &filename, const std::string &sha256) {
     std::vector<uint8_t> data;
 
     //This silently fails when location is already present
@@ -77,5 +79,18 @@ void Utils::DownloadManager::DownloadTo(const std::string &url, const std::strin
     GetUrl(url, data);
     FILE *file = fopen(finalloc.c_str(), "wb+");
     fwrite(data.data(), data.size(), 1, file);
+    const long filesize = fseek(file, 0, SEEK_END) == 0 ? ftell(file) : -1L;
     fclose(file);
+    if (filesize <= 0 || static_cast<size_t>(filesize) != data.size()) {
+        remove(finalloc.c_str());
+        return false;
+    }
+
+    if (sha256.empty() || !Utils::Misc::VerifySHA256(finalloc, sha256)) {
+        // SHA256 verification failed, removing the downloaded file
+        remove(finalloc.c_str());
+        return false;
+    }
+
+    return true;
 }
